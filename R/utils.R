@@ -364,16 +364,13 @@ update_wave_iteration <- function(calib_object) {
 }
 
 update_calibration_state <- function(calib_object, results) {
-  # early return on first call
-  if (nrow(results) == 0)
-    return(calib_object)
-
-  jobs_results <- get_jobs_results(calib_object, results)
-
-  calib_object <- update_done_status(calib_object, jobs_results)
-  calib_object <- update_default_proposal(calib_object, jobs_results)
+  # Do not check the results on the first iteration
+  if (get_current_iteration(calib_object) > 0) {
+    jobs_results <- get_jobs_results(calib_object, results)
+    calib_object <- update_done_status(calib_object, jobs_results)
+    calib_object <- update_default_proposal(calib_object, jobs_results)
+  }
   calib_object <- update_wave_iteration(calib_object)
-
   calib_object
 }
 
