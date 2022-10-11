@@ -94,7 +94,7 @@ is_wave_done <- function(calib_object) {
   calib_object$state$done
 }
 
-# # I/O ------------------------------------------------------------------------
+# # Input-Output ---------------------------------------------------------------
 make_folders <- function(calib_object) {
   inner_dir <- get_sim_result_save_dir(calib_object)
   if (!fs::dir_exists(inner_dir)) {
@@ -201,6 +201,11 @@ save_full_results <- function(calib_object, full_results) {
 increment_iteration <- function(calib_object) {
   current_iteration <- get_current_iteration(calib_object)
   mutate_calib_state(calib_object, "iteration", current_iteration + 1)
+}
+
+decrement_iteration <- function(calib_object) {
+  current_iteration <- get_current_iteration(calib_object)
+  mutate_calib_state(calib_object, "iteration", current_iteration - 1)
 }
 
 increment_wave <- function(calib_object) {
@@ -319,9 +324,17 @@ merge_results <- function(calib_object) {
 process_sim_results <- function(calib_object) {
   if (get_current_iteration(calib_object) != 0) {
     new_results <- merge_results(calib_object)
-    save_results(calib_object, new_results)
     clear_sim_results(calib_object)
+
+    # If less results than expected, discard this iteration
+    # (for instance if the cluster stopped during the step 2)
+    if (nrow(new_results) < get_n_sims(calib_object)) {
+      calib_object <- decrement_iteration(calib_object)
+    } else {
+      save_results(calib_object, new_results)
+    }
   }
+  calib_object
 }
 
 get_jobs_results <- function(calib_object, results) {
