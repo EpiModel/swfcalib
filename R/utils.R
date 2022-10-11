@@ -152,6 +152,7 @@ save_calib_object <- function(calib_object) {
 
 save_sim_result <- function(calib_object, sim_results, i, proposal) {
   save_path <- get_sim_result_save_path(calib_object, i)
+  sim_results[[".wave"]] <- get_current_wave(calib_object)
   sim_results[[".iteration"]] <- get_current_iteration(calib_object)
   sim_results[[".proposal_index"]] <- proposal[[".proposal_index"]]
   saveRDS(sim_results, save_path)
@@ -163,7 +164,8 @@ load_sim_results <- function(calib_object) {
   if (length(sim_result_files) == 0) {
     dplyr::tibble(
       .proposal_index = numeric(0),
-      .iteration = numeric(0)
+      .iteration = numeric(0),
+      .wave = numeric(0)
     )
   } else {
     dplyr::bind_rows(future.apply::future_lapply(sim_result_files, readRDS))
@@ -257,8 +259,12 @@ make_proposals <- function(calib_object, results) {
   proposals <- merge_proposals(proposals)
   proposals <- fill_proposals(proposals, calib_object)
   proposals[[".proposal_index"]] <- seq_len(nrow(proposals))
+  proposals[[".wave"]] <- get_current_wave(calib_object)
   proposals[[".iteration"]] <- get_current_iteration(calib_object)
-  dplyr::select(proposals, dplyr::everything(), ".proposal_index", ".iteration")
+  dplyr::select(
+    proposals,
+    dplyr::everything(), ".proposal_index", ".wave", ".iteration"
+  )
 }
 
 merge_proposals <- function(proposals) {
@@ -318,7 +324,7 @@ merge_results <- function(calib_object) {
   # if multiple sim per proposal -> keep them all
   dplyr::right_join(
     proposals, sim_results,
-    by = c(".proposal_index", ".iteration")
+    by = c(".proposal_index", ".wave", ".iteration")
   )
 }
 
