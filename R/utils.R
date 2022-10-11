@@ -186,7 +186,8 @@ load_full_results <- function(calib_object) {
     function(wave) {
       calib_object <- mutate_calib_state(calib_object, "wave", wave)
       load_results(calib_object)
-  })
+    }
+  )
   dplyr::bind_rows(wave_results)
 }
 
@@ -266,11 +267,12 @@ merge_proposals <- function(proposals) {
     proposals,
     function(d) {
       missing_rows <- max_rows - nrow(d)
-      if (missing_rows > 0)
+      if (missing_rows > 0) {
         d <- dplyr::bind_rows(
           d,
           dplyr::slice_sample(d, n = missing_rows, replace = TRUE)
         )
+      }
       d
     },
     future.seed = TRUE
@@ -388,8 +390,19 @@ update_calibration_state <- function(calib_object, results) {
 }
 
 wrap_up_calibration <- function(calib_object) {
-    save_calib_object(calib_object)
-    message("Calibration complete")
-    next_step <- slurmworkflow::get_current_workflow_step() + 2
-    slurmworkflow::change_next_workflow_step(next_step)
+  save_calib_object(calib_object)
+  message("Calibration complete")
+  next_step <- slurmworkflow::get_current_workflow_step() + 2
+  slurmworkflow::change_next_workflow_step(next_step)
+}
+
+print_log <- function(calib_object) {
+  cat("Currently state:\n")
+  cat("\tWave: ", get_current_wave(calib_object), "\n")
+  cat("\tIteration: ", get_current_iteration(calib_object), "\n\n")
+  cat("The `default_proposal` currently contains:\n")
+  default_proposal <- get_default_proposal(calib_object)
+  for (nm in names(default_proposal)) {
+    cat("\t", nm, ": ", default_proposal[[nm]][1], "\n")
+  }
 }

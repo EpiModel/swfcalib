@@ -16,6 +16,8 @@ calibration_step1 <- function(calib_object, n_cores) {
     save_proposals(calib_object, proposals)
     save_calib_object(calib_object)
   }
+
+  print_log(calib_object)
 }
 
 #' @export
@@ -52,4 +54,5 @@ calibration_step3 <- function(calib_object) {
   calib_object <- load_calib_object(calib_object)
   full_results <- load_full_results(calib_object)
   save_full_results(calib_object, full_results)
+  print_log(calib_object)
 }
