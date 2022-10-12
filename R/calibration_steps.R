@@ -7,11 +7,13 @@ calibration_step1 <- function(calib_object, n_cores) {
 
   calib_object <- process_sim_results(calib_object)
   results <- load_results(calib_object)
+  print("before done")
   calib_object <- update_calibration_state(calib_object, results)
 
   if (is_calibration_complete(calib_object)) {
     wrap_up_calibration(calib_object)
   } else {
+    print("before prp")
     proposals <- make_proposals(calib_object, results)
     save_proposals(calib_object, proposals)
     save_calib_object(calib_object)
