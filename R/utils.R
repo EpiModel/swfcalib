@@ -281,7 +281,7 @@ make_proposals <- function(calib_object, results) {
   } else {
     proposals <- future.apply::future_lapply(
       current_jobs,
-      function(job, results) job$make_next_proposals(job, results),
+      function(job) job$make_next_proposals(calib_object, job, results),
       results = results,
       calib_object = calib_object,
       future.seed = TRUE
@@ -379,7 +379,7 @@ process_sim_results <- function(calib_object) {
 get_jobs_results <- function(calib_object, results) {
   future.apply::future_lapply(
     get_current_jobs(calib_object),
-    function(job, results) job$get_result(job, results),
+    function(job) job$get_result(calib_object, job, results),
     results = results,
     calib_object = calib_object,
     future.seed = TRUE
