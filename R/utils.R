@@ -281,9 +281,9 @@ make_proposals <- function(calib_object, results) {
   } else {
     proposals <- future.apply::future_lapply(
       current_jobs,
-      function(job) job$make_next_proposals(calib_object, job, results),
-      results = results,
-      calib_object = calib_object,
+      function(co, job, res) job$make_next_proposals(co, job, res),
+      res = results,
+      co = calib_object,
       future.seed = TRUE
     )
   }
@@ -377,15 +377,13 @@ process_sim_results <- function(calib_object) {
 }
 
 get_jobs_results <- function(calib_object, results) {
-  print("plante là")
   future.apply::future_lapply(
     get_current_jobs(calib_object),
-    function(job) job$get_result(calib_object, job, results),
-    results = results,
-    calib_object = calib_object,
+    function(co, job, res) job$get_result(co, job, res),
+    res = results,
+    co = calib_object,
     future.seed = TRUE
   )
-  print("ou là")
 }
 
 update_done_status <- function(calib_object, job_results) {
