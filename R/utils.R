@@ -377,6 +377,7 @@ process_sim_results <- function(calib_object) {
 }
 
 get_jobs_results <- function(calib_object, results) {
+  print("plante là")
   future.apply::future_lapply(
     get_current_jobs(calib_object),
     function(job) job$get_result(calib_object, job, results),
@@ -384,6 +385,7 @@ get_jobs_results <- function(calib_object, results) {
     calib_object = calib_object,
     future.seed = TRUE
   )
+  print("ou là")
 }
 
 update_done_status <- function(calib_object, job_results) {
