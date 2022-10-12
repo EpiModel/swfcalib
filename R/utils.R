@@ -108,7 +108,7 @@ is_wave_done <- function(calib_object) {
 make_folders <- function(calib_object) {
   dirs <- c(
     get_sim_result_save_dir(calib_object),
-    get_sideload_dir(capabilities)
+    get_sideload_dir(calib_object)
   )
   for (d in dirs) {
     if (!fs::dir_exists(d)) fs::dir_create(d)
@@ -222,9 +222,12 @@ save_sideload <- function(calib_object, x, id) {
 #' @export
 load_sideload <- function(calib_object, id) {
   sl_path <- get_sideload_path(calib_object, id)
-  readRDS(sl_path)
+  if (!fs::file_exists(sl_path)) {
+    return(NULL)
+  } else {
+    readRDS(sl_path)
+  }
 }
-
 
 # # Updaters -------------------------------------------------------------------
 
@@ -280,6 +283,7 @@ make_proposals <- function(calib_object, results) {
       current_jobs,
       function(job, results) job$make_next_proposals(job, results),
       results = results,
+      calib_object = calib_object,
       future.seed = TRUE
     )
   }
@@ -377,6 +381,7 @@ get_jobs_results <- function(calib_object, results) {
     get_current_jobs(calib_object),
     function(job, results) job$get_result(job, results),
     results = results,
+    calib_object = calib_object,
     future.seed = TRUE
   )
 }
