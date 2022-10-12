@@ -77,6 +77,16 @@ get_full_results_path <- function(calib_object) {
   fs::path(root_directory, "full_results.rds")
 }
 
+get_sideload_dir <- function(calib_object) {
+  root_directory <- get_root_dir(calib_object)
+  fs::path(root_directory, "sideloads")
+}
+
+get_sideload_path <- function(calib_object, id) {
+  sideload_directory <- get_sideload_dir(calib_object)
+  fs::path(sideload_directory, paste0(id, ".rds"))
+}
+
 # # Checkers -------------------------------------------------------------------
 is_valid_iteration <- function(calib_object) {
   get_current_iteration(calib_object) <= get_max_iteration(calib_object)
@@ -96,9 +106,12 @@ is_wave_done <- function(calib_object) {
 
 # # Input-Output ---------------------------------------------------------------
 make_folders <- function(calib_object) {
-  inner_dir <- get_sim_result_save_dir(calib_object)
-  if (!fs::dir_exists(inner_dir)) {
-    fs::dir_create(inner_dir)
+  dirs <- c(
+    get_sim_result_save_dir(calib_object),
+    get_sideload_dir(capabilities)
+  )
+  for (d in dirs) {
+    if (!fs::dir_exists(d)) fs::dir_create(d)
   }
   invisible(TRUE)
 }
@@ -196,6 +209,20 @@ load_full_results <- function(calib_object) {
 save_full_results <- function(calib_object, full_results) {
   full_results_path <- get_full_results_path(calib_object)
   saveRDS(full_results, full_results_path)
+}
+
+#' Save some data to be reused by the calibration process
+#' @export
+save_sideload <- function(calib_object, x, id) {
+  sl_path <- get_sideload_path(calib_object, id)
+  saveRDS(x, sl_path)
+}
+
+#' Read some data saved to be reused by the calibration process
+#' @export
+load_sideload <- function(calib_object, id) {
+  sl_path <- get_sideload_path(calib_object, id)
+  readRDS(sl_path)
 }
 
 
@@ -403,7 +430,7 @@ wrap_up_calibration <- function(calib_object) {
 }
 
 print_log <- function(calib_object) {
-  cat("Currently state:\n")
+  cat("Current state:\n")
   cat("\tWave: ", get_current_wave(calib_object), "\n")
   cat("\tIteration: ", get_current_iteration(calib_object), "\n\n")
   cat("The `default_proposal` currently contains:\n")
