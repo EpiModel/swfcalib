@@ -82,9 +82,10 @@ get_sideload_dir <- function(calib_object) {
   fs::path(root_directory, "sideloads")
 }
 
-get_sideload_path <- function(calib_object, id) {
+get_sideload_path <- function(calib_object, job) {
   sideload_directory <- get_sideload_dir(calib_object)
-  fs::path(sideload_directory, paste0(id, ".rds"))
+  jobid <- paste0(job$targets, job$params, collapse = "")
+  fs::path(sideload_directory, paste0(jobid, ".rds"))
 }
 
 # # Checkers -------------------------------------------------------------------
@@ -213,15 +214,15 @@ save_full_results <- function(calib_object, full_results) {
 
 #' Save some data to be reused by the calibration process
 #' @export
-save_sideload <- function(calib_object, x, id) {
-  sl_path <- get_sideload_path(calib_object, id)
+save_sideload <- function(calib_object, job, x) {
+  sl_path <- get_sideload_path(calib_object, job)
   saveRDS(x, sl_path)
 }
 
 #' Read some data saved to be reused by the calibration process
 #' @export
-load_sideload <- function(calib_object, id) {
-  sl_path <- get_sideload_path(calib_object, id)
+load_sideload <- function(calib_object, job) {
+  sl_path <- get_sideload_path(calib_object, job)
   if (!fs::file_exists(sl_path)) {
     return(NULL)
   } else {
