@@ -84,8 +84,11 @@ get_sideload_dir <- function(calib_object) {
 
 get_sideload_path <- function(calib_object, job) {
   sideload_directory <- get_sideload_dir(calib_object)
-  jobid <- paste0(job$targets, job$params, collapse = "")
-  fs::path(sideload_directory, paste0(jobid, ".rds"))
+  fs::path(sideload_directory, paste0(get_job_id(job), ".rds"))
+}
+
+get_job_id <- function(job) {
+  job$id
 }
 
 # # Checkers -------------------------------------------------------------------
@@ -257,6 +260,19 @@ initialize_state <- function(calib_object) {
   calib_object$state$wave <- 1
   calib_object$state$iteration <- 0
   calib_object$state$default_proposal <- calib_object$config$default_proposal
+
+  calib_object <- initialize_job_ids(calib_object)
+
+  calib_object
+}
+
+initialize_job_ids <- function(calib_object) {
+  for (wave_i in seq_along(calib_object$wave)) {
+    for (job_i in seq_along(calib_object$wave[[wave_i]])) {
+      calib_object$wave[[wave_i]][[job_i]]$id <-
+        paste0("wave", wave_i, "-job", job_i)
+    }
+  }
   calib_object
 }
 
