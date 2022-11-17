@@ -4,7 +4,7 @@
 \alias{load_sideload}
 \title{Read some data saved to be reused by the calibration process}
 \usage{
-load_sideload(calib_object, id)
+load_sideload(calib_object, job)
 }
 \description{
 Read some data saved to be reused by the calibration process
