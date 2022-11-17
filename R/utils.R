@@ -35,7 +35,6 @@ get_proposals_path <- function(calib_object) {
   fs::path(current_wave_dir, "proposals.rds")
 }
 
-#' @inheritParams calibration_step1
 get_default_proposal <- function(calib_object) {
   calib_object$state$default_proposal
 }
