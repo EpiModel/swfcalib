@@ -445,6 +445,8 @@ update_calibration_state <- function(calib_object, results) {
 }
 
 wrap_up_calibration <- function(calib_object) {
+  calib_object <- store_calibrated_proposal(calib_object)
+  save_calibrated_csv(calib_object)
   save_calib_object(calib_object)
   message("Calibration complete")
   next_step <- slurmworkflow::get_current_workflow_step() + 2
@@ -460,4 +462,41 @@ print_log <- function(calib_object) {
   for (nm in names(default_proposal)) {
     cat("\t", nm, ": ", default_proposal[[nm]][1], "\n")
   }
+}
+
+get_calibrated_csv_path <- function(calib_object) {
+  root_directory <- get_root_dir(calib_object)
+  fs::path(root_directory, "calibrated.csv")
+}
+
+get_param_type <- function(x) {
+  dplyr::case_when(
+    is.logical(x) ~ "logical",
+    is.numeric(x) ~ "numeric",
+    .default = "character"
+  )
+}
+
+get_calibrated_proposal <- function(calib_object) {
+  calib_object$calibrated_proposal
+}
+
+store_calibrated_proposal <- function(calib_object) {
+  calib_object$calibrated_proposal <- get_default_proposal(calib_object)
+  calib_object
+}
+
+get_long_calibrated_proposal <- function(calib_object) {
+  calibrated_proposal <- get_calibrated_proposal(calib_object)
+  long_calib <- tidyr::pivot_longer(
+    calibrated_proposal, cols = dplyr::everything(),
+    names_to = "param", values_to = "value"
+  )
+  long_calib$type <- vapply(calibrated_proposal, get_param_type, "")
+  long_calib
+}
+
+save_calibrated_csv <- function(calib_object) {
+  long_calib <- get_long_calibrated_proposal(calib_object)
+  readr::write_csv(long_calib, get_calibrated_csv_path(calib_object))
 }
