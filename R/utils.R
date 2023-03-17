@@ -40,7 +40,7 @@ get_default_proposal <- function(calib_object) {
 }
 
 get_proposal_n <- function(proposals, n) {
-  dplyr::filter(proposals, `.proposal_index` == n)
+  dplyr::filter(proposals, .data$`.proposal_index` == n)
 }
 
 get_n_sims <- function(calib_object) {
