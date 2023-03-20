@@ -15,7 +15,10 @@ calibration_step1 <- function(calib_object, n_cores) {
   calib_object <- update_calibration_state(calib_object, results)
 
   if (is_calibration_complete(calib_object)) {
-    wrap_up_calibration(calib_object)
+    # When the calibration is done, skip the next step
+    next_step <- slurmworkflow::get_current_workflow_step() + 2
+    slurmworkflow::change_next_workflow_step(next_step)
+    message("Calibration complete")
   } else {
     proposals <- make_proposals(calib_object, results)
     save_proposals(calib_object, proposals)
@@ -25,6 +28,13 @@ calibration_step1 <- function(calib_object, n_cores) {
   print_log(calib_object)
 }
 
+#' Second calibration step: run the model for each proposal
+#'
+#' @param batch_num the batch number for the current proposal
+#' @param n_batches the total number of batches for this step
+#'
+#' @inheritsParams calibration_step1
+#'
 #' @export
 calibration_step2 <- function(calib_object, n_cores, batch_num, n_batches) {
   oplan <- future::plan("multicore", workers = n_cores)
@@ -54,10 +64,14 @@ calibration_step2 <- function(calib_object, n_cores, batch_num, n_batches) {
   }
 }
 
+#' Third calibration step: Wrap up the calibration system and store the results
+#'
+#' Having this as a separate step allows a mail to be send at the end of the
+#' calibration
+#'
+#' @inheritsParams calibration_step1
+#'
 #' @export
 calibration_step3 <- function(calib_object) {
-  calib_object <- load_calib_object(calib_object)
-  full_results <- load_full_results(calib_object)
-  save_full_results(calib_object, full_results)
-  print_log(calib_object)
+  wrap_up_calibration(load_calib_object(calib_object))
 }

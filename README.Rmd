@@ -22,8 +22,13 @@ knitr::opts_chunk$set(
 [![codecov](https://codecov.io/gh/EpiModel/swfcalib/branch/main/graph/badge.svg?token=eo2r0HeP8Z)](https://codecov.io/gh/EpiModel/swfcalib)
 <!-- badges: end -->
 
-**swfcalib** builds upon [slurmworkflow](https://github.com/EpiModel/slurmworkflow)
-to provide an automatic calibration framework on a Slurm equiped HPC.
+`swfcalib` gives a scaffold to make an automated calibration system on a
+[Slurm](https://slurm.schedmd.com/) equipped HPC.
+
+`swfcalib` does not use a long running job to orchestrate the calibration but
+relies on [`slurmworkflow`](https://github.com/EpiModel/slurmworkflow) and a
+stored calibration object to chose which step of the calibration to run. This
+allows very long calibrations to take place without flooding the `slurm` queue.
 
 ## Installation
 
@@ -38,3 +43,39 @@ remotes::install_github("EpiModel/swfcalib")
 ```{r example, eval = FALSE}
 library(swfcalib)
 ```
+
+## Design
+
+The calibration process follows a typical proposal, validation loop. Where
+the model is run with a set of parameters and a new proposal is made according
+to the results. This goes on until the model is fully calibrated.
+
+The specificity lies in the ability to try many proposal at once on an HPC, and
+to set up this proposal validation loop without a long running orchestrating
+job.
+
+The calibration can be splited into *waves*. Each wave can contains multiple
+*jobs*, each focusing on a set of parameters. This permits the parallel
+calibration of multiple independent parameters. At each *iteration*, the model
+is ran only once per proposal, and each job gather the outcomes it needs to
+make its next proposal. Once all *jobs* in a *wave* are done, i.e. the
+parameters the govern are calibrated, the system moves to the next *wave*. This
+allows the sequential calibration of parameters when strong assumption about
+their independence can be made.
+
+This design was crafted for the very noisy models where many replications are
+needed and where most parameters are independent or conditionally independents.
+
+## Terminology
+
+- the *model*: a function taking a *proposal* as argument and returning
+  formatted *results*. It is what we are calibrating.
+- a *proposal*: a one row `data.frame` with each column being a parameter for
+  the *model*
+- *results*: the output of a *model* run for a given *proposal*.
+- *sideload*: data saved by a job to be reused at the next or in a later part
+  of the current iteration
+- *job*: a set of parameters to be calibrated at once. I.e. using the same
+  proposal function and the same checker function
+- *wave*: a set of independent *jobs* that can be calibrated using the same run
+  of the model.
