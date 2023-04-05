@@ -1,0 +1,116 @@
+---
+title: "swfcalib"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{swfcalib}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+`swfcalib` gives a scaffold to make an automated calibration system on a
+[Slurm](https://slurm.schedmd.com/) equipped HPC. `swfcalib` relies on
+[`slurmworkflow`](https://github.com/EpiModel/slurmworkflow) and a stored
+calibration object to chose which step of the calibration to run. This allows
+very long calibrations to take place without flooding the `slurm` queue.
+
+`swfcalib` allows the calibration of a *model* where a set of *outcomes* are to
+be matched specific *targets*. We specify which *outcome* is governed by what
+*parameter* in the *calibration object*.
+
+`swfcalib` defines three simple `slurmworkflow` steps:
+
+1. process the *model* runs *outcomes* and choose what to do next
+   - if the calibration is complete, go to step 3
+   - if not, make new *parameter* proposals and go to step 2
+2. run the *model* with each *parameter* proposals and go back to step 1
+3. wrap up the calibration, save the accepted set of *parameters* and all the
+   results
+
+## Parameters and Outcomes
+
+In `swfcalib`, *model* is a function that takes a 1 row `tibble` of **all** the
+parameters and return a 1 row `tibble` of **all** the outcomes.
+
+However, calibrating all parameters at once with all outcomes at once may not be
+the most efficient approach, especially when known independence or conditional
+independence exists among parameters and outcomes.
+
+In EpiModelHIV models like [this published
+one](https://github.com/EpiModel/CombPrevNet), the portion of individuals
+infected by HIV that are diagnosed and the portion of diagnosed that are linked
+to care are two independent metrics. They are respectively affected by the
+HIV test rate and the rate of treatment linkage.
+
+Therefore, we can calibrate these two parameters on the same set of simulations.
+
+On the other hand, the portion of HIV diagnosed that are virally suppressed
+depend on the test rate, linkage to care and retention in care. To calibrate this
+last one, we can either Calibrate everything at once, 3 parameters and 3 outcomes.
+Doing so is quite hard in our models due to the noisy nature of our results.
+
+The other approach is to calibrate them sequentially. A first wave of
+calibration tackles the first two in parallel and a second one the third. This
+approach convert one hard and long problem to solve into three simple and quick
+one.
+
+A word of caution. This method is very efficient but requires a good
+understanding of all the processes at hand to ensure the independence of the
+parameters. Fortunately, if such independence does not exists, the final
+calibration will be visibly off.
+
+## Calibration Waves, Jobs and Iteration
+
+### Job
+
+Formally, `swfcalib` defines a *job* a set of *parameters* to be calibrated by
+trying to make a set of *outcomes* reach a set of *targets*.
+
+Each *job* needs a function to make the next set of *parameter* proposals to
+test as well as a function checking if the proposals gave sufficiently good
+results. This latter function is in charge of stopping the calibration process
+for the current job.
+
+### Wave
+
+A *wave* is a set of multiple jobs that can be run in parallel (i.e.
+independent from one another).
+
+In practice, `swfcalib` takes the proposals from all the jobs in a wave, combine
+them and run one simulation per proposal. If you have a 3 job wave, each making
+10 proposal, only 10 simulations will be run. On the evaluation step, each job
+will only assess the quality of it's own outcomes.
+
+Once all the jobs in a wave are finished, the system moves to the next one if
+any, using the results of the previous ones.
+
+## Data Structures
+
+### Parameter Proposals
+
+A set of parameter proposals is a `tibble` with 3 mandatory columns:
+
+- `.proposals_index`: the index of the proposal for this iteration
+- `.wave`: the number of the current wave
+- `.iteration`: the number of the current iteration
+
+plus one column per parameter and each row represent a different unique
+proposal.
+
+### Outcomes
+
+A set of outcomes is a `tibble` with 3 mandatory columns:
+
+- `.proposals_index`: the index of the proposal for this iteration
+- `.wave`: the number of the current wave
+- `.iteration`: the number of the current iteration
+
+plus one column per outcome value and each row represent the outcome from a
+specific proposal.
+
+### Results
+
+A set of results is the join of proposals and outcomes. It is a `tibble` with
+
+- all parameter columns
+- the three mandatory columns `.proposals_index`, `.wave`, `.iteration`
+- all outcome columns
