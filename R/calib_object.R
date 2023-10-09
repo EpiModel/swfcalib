@@ -5,7 +5,8 @@ get_root_dir <- function(calib_object) {
 make_folders <- function(calib_object) {
   dirs <- c(
     get_sim_result_save_dir(calib_object),
-    get_sideload_dir(calib_object)
+    get_sideload_dir(calib_object),
+    get_assessements_dir(calib_object)
   )
   for (d in dirs) {
     if (!fs::dir_exists(d)) fs::dir_create(d)

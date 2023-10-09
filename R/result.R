@@ -2,16 +2,17 @@
 # results.
 # Discard the iteration if some results are missing
 process_sim_results <- function(calib_object) {
-  if (get_current_iteration(calib_object) != 0) {
-    new_results <- merge_sim_results(calib_object)
-    clear_sim_results(calib_object)
-    # If less results than expected, discard this iteration
-    # (for instance if the cluster stopped during the step 2)
-    if (nrow(new_results) < get_n_sims(calib_object)) {
-      calib_object <- decrement_iteration(calib_object)
-    } else {
-      save_results(calib_object, new_results)
-    }
+  # Early return if no simulations has been run for this wave yet
+  if (get_current_iteration(calib_object) == 0) return(calib_object)
+
+  new_results <- merge_sim_results(calib_object)
+  clear_sim_results(calib_object)
+  # If less results than expected, discard this iteration
+  # (for instance if the cluster stopped during the step 2)
+  if (nrow(new_results) < get_n_sims(calib_object)) {
+    calib_object <- decrement_iteration(calib_object)
+  } else {
+    save_results(calib_object, new_results)
   }
   calib_object
 }

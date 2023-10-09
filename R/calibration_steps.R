@@ -14,6 +14,9 @@ calibration_step1 <- function(calib_object, n_cores) {
   results <- load_results(calib_object)
   calib_object <- update_calibration_state(calib_object, results)
 
+  assessments <- make_assessments(calib_object, results)
+  save_assessments(calib_object, assessments)
+
   if (is_calibration_complete(calib_object)) {
     # When the calibration is done, skip the next step
     next_step <- slurmworkflow::get_current_workflow_step() + 2
