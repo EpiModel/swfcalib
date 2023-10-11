@@ -29,7 +29,7 @@ make_assessments <- function(calib_object, results) {
 
 merge_assessments <- function(new, old) {
   out <- list(
-    raw = dplyr::bind_rows(new$raw, old$raw),
+    raw = dplyr::bind_rows(old$raw, new$raw),
     jobs = list()
   )
 
