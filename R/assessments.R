@@ -1,134 +1,80 @@
-make_rmse <- function(x, target) sqrt(mean((target - x)^2))
-make_mae <- function(x, target) mean(abs(target - x))
-
-get_spread <- function(x) diff(range(x))
-
-make_assessments <- function(calib_object, results) {
+update_assessments <- function(calib_object, results) {
   if (nrow(results) == 0) {
-    return(list(jobs = list(), raw = dplyr::tibble()))
+    save_assessments(calib_object, list())
+    return(invisible(calib_object))
   }
+
+  out <- load_assessments(calib_object)
+  cur_wave <- paste0("wave", get_current_wave(calib_object))
 
   assessments <- future.apply::future_lapply(
     get_current_jobs(calib_object),
-    make_job_assessments,
+    make_job_assessment,
     calib_object = calib_object,
     results = results
   )
 
-  assessments <- purrr::list_transpose(assessments, simplify = FALSE)
-  out <- list()
-  out$raw <- purrr::reduce(assessments$raw, dplyr::left_join, by = ".iteration")
-  out$jobs <- assessments$job
-  names(out$jobs) <- purrr::flatten_chr(assessments$job_id)
-
-  old_assessments <- load_assessments(calib_object)
-  out <- merge_assessments(out, old_assessments)
-
-  out
+  out[[cur_wave]] <- merge_wave_assements(assessments, out[[cur_wave]])
+  save_assessments(calib_object, out)
+  invisible(calib_object)
 }
 
-merge_assessments <- function(new, old) {
-  out <- list(
-    raw = dplyr::bind_rows(old$raw, new$raw),
-    jobs = list()
-  )
-
-  for (job_name in names(new$jobs)) {
-    out$jobs[[job_name]] <- dplyr::bind_rows(
-      old$jobs[[job_name]],
-      new$jobs[[job_name]]
-    )
+merge_wave_assements <- function(new, old) {
+  old <- if (is.null(old)) list() else old
+  for (nme in names(new)) {
+    new[[nme]] <- merge_job_assessment(new[[nme]], old[[nme]])
   }
-  out
+  new
 }
 
-load_assessments <- function(calib_object) {
-  out <- list(
-    raw = load_assessment_file(get_raw_assessment_path(calib_object)),
-    jobs = list()
+merge_job_assessment <- function(new, old) {
+  list(
+    infos = new$infos,
+    measures = dplyr::bind_rows(old$measures, new$measures)
   )
-
-  job_ids <- vapply(get_current_jobs(calib_object), get_job_id, "")
-  for (job_id in job_ids) {
-    out$jobs[[job_id]] <- load_assessment_file(
-      get_job_assessment_path(calib_object, job_id)
-    )
-  }
-  names(out$jobs) <- job_ids
-  out
-}
-
-load_assessment_file <- function(file_path) {
-  if (fs::file_exists(file_path)) readRDS(file_path) else dplyr::tibble()
-}
-
-load_job_assessment <- function(calib_object, job_id) {
-  file_path <- get_job_assessment_path(calib_object, job_id)
-  if (fs::file_exists(file_path)) readRDS(file_path) else dplyr::tibble()
 }
 
 save_assessments <- function(calib_object, assessments) {
-  saveRDS(assessments[["raw"]], get_raw_assessment_path(calib_object))
-  for (job_id in names(assessments$jobs)) {
-    saveRDS(
-      assessments$jobs[[job_id]],
-      get_job_assessment_path(calib_object, job_id)
-    )
-  }
-
-  readr::write_csv(assessments[["raw"]], get_csv_assessment_path(calib_object))
+  saveRDS(assessments, get_assessments_path(calib_object))
 }
 
-get_assessments_dir <- function(calib_object) {
-  fs::path(get_current_wave_dir(calib_object), "assessments")
+get_assessments_path <- function(calib_object) {
+  fs::path(get_root_dir(calib_object), "assessments.rds")
 }
 
-get_raw_assessment_path <- function(calib_object) {
-  fs::path(get_assessments_dir(calib_object), "raw.rds")
+load_assessments <- function(calib_object) {
+  f_path <- get_assessments_path(calib_object)
+  if (fs::file_exists(f_path)) readRDS(f_path) else list()
 }
 
-get_job_assessment_path <- function(calib_object, job_id) {
-  fs::path(get_assessments_dir(calib_object), paste0(job_id, ".rds"))
-}
+make_job_assessment <- function(calib_object, job, results) {
+  out <- list()
 
-get_csv_assessment_path <- function(calib_object) {
-  fs::path(get_assessments_dir(calib_object), "raw.csv")
-}
+  out$infos <- job[c("targets", "targets_val", "params")]
+  out$infos$job_id <- get_job_id(job)
+  out$infos$params_ranges <- lapply(job$initial_proposals, range)
 
-
-make_job_assessments <- function(calib_object, job, results) {
   current_iteration <- get_current_iteration(calib_object)
-  d <- results |>
-    dplyr::filter(.data$.iteration == current_iteration)
+  d <- dplyr::filter(results, .data$.iteration == current_iteration)
 
+  make_rmse <- function(x, target) sqrt(mean((target - x)^2))
   iter_rmse <- apply(d[job$targets], 1, make_rmse, target = job$targets_val)
-  iter_mae <- apply(d[job$targets], 1, make_mae, target = job$targets_val)
 
-  errors <- Map(
-    function(x, target) target - x,
-    d[job$targets],
-    job$targets_val
-  )
-
+  get_spread <- function(x) diff(range(x))
   spreads <- vapply(d[job$params], get_spread, numeric(1))
 
-  job_assessment <- dplyr::tibble(
-    .iteration = current_iteration,
+  out$measures <- dplyr::tibble(
+    iteration = current_iteration,
     rmse_mean = mean(iter_rmse),
     rmse_sd = sd(iter_rmse),
-    mae_mean = mean(iter_mae),
-    mae_sd = sd(iter_mae),
     param_volume = prod(spreads)
   )
 
-  raw_assessment <- dplyr::tibble(.iteration = current_iteration)
-  raw_assessment[paste0("spread_", names(spreads))] <- as.list(spreads)
-  raw_assessment[paste0("mean_err_", job$targets)] <- lapply(errors, mean)
-  raw_assessment[paste0("sd_err_", job$targets)] <- lapply(errors, sd)
+  errors <- Map(function(x, target) target - x, d[job$targets], job$targets_val)
 
-  list(
-    job_id = get_job_id(job),
-    raw = raw_assessment,
-    job = job_assessment
-  )
+  out$measures[paste0("spread__", names(spreads))] <- as.list(spreads)
+  out$measures[paste0("mean_err__", job$targets)] <- lapply(errors, mean)
+  out$measures[paste0("sd_err__", job$targets)] <- lapply(errors, sd)
+
+  out
 }

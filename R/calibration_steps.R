@@ -12,9 +12,7 @@ calibration_step1 <- function(calib_object, n_cores) {
 
   calib_object <- process_sim_results(calib_object)
   results <- load_results(calib_object)
-
-  assessments <- make_assessments(calib_object, results)
-  save_assessments(calib_object, assessments)
+  update_assessments(calib_object, results)
 
   calib_object <- update_calibration_state(calib_object, results)
 

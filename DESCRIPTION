@@ -16,7 +16,6 @@ Imports:
    future,
    future.apply,
    slurmworkflow,
-   readr,
    fs,
    dplyr
 Remotes:
