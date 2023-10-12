@@ -16,6 +16,7 @@ Imports:
    future,
    future.apply,
    slurmworkflow,
+   readr,
    fs,
    dplyr
 Remotes:
@@ -23,7 +24,7 @@ Remotes:
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-Suggests: 
+Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr

@@ -75,6 +75,8 @@ save_assessments <- function(calib_object, assessments) {
       get_job_assessment_path(calib_object, job_id)
     )
   }
+
+  readr::write_csv(assessments[["raw"]], get_csv_assessment_path(calib_object))
 }
 
 get_assessments_dir <- function(calib_object) {
@@ -87,6 +89,10 @@ get_raw_assessment_path <- function(calib_object) {
 
 get_job_assessment_path <- function(calib_object, job_id) {
   fs::path(get_assessments_dir(calib_object), paste0(job_id, ".rds"))
+}
+
+get_csv_assessment_path <- function(calib_object) {
+  fs::path(get_assessments_dir(calib_object), "raw.csv")
 }
 
 
@@ -126,5 +132,3 @@ make_job_assessments <- function(calib_object, job, results) {
     job = job_assessment
   )
 }
-
-#
