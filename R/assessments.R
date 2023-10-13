@@ -1,10 +1,10 @@
 update_assessments <- function(calib_object, results) {
+  out <- load_assessments(calib_object)
   if (nrow(results) == 0) {
-    save_assessments(calib_object, list())
+    save_assessments(calib_object, out)
     return(invisible(calib_object))
   }
 
-  out <- load_assessments(calib_object)
   cur_wave <- paste0("wave", get_current_wave(calib_object))
 
   assessments <- future.apply::future_lapply(
@@ -55,7 +55,12 @@ make_job_assessment <- function(calib_object, job, results) {
   out$infos$params_ranges <- lapply(job$initial_proposals, range)
 
   current_iteration <- get_current_iteration(calib_object)
-  d <- dplyr::filter(results, .data$.iteration == current_iteration)
+  current_wave <- get_current_wave(calib_object)
+  d <- dplyr::filter(
+    results,
+    .data$.iteration == current_iteration,
+    .data$.wave == current_wave
+  )
 
   make_rmse <- function(x, target) sqrt(mean((target - x)^2))
   iter_rmse <- apply(d[job$targets], 1, make_rmse, target = job$targets_val)
