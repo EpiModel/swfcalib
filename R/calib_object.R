@@ -2,7 +2,7 @@ get_root_dir <- function(calib_object) {
   calib_object$config$root_directory
 }
 
-make_folders <- function(calib_object) {
+make_directories <- function(calib_object) {
   dirs <- c(
     get_sim_result_save_dir(calib_object),
     get_sideload_dir(calib_object),
@@ -22,7 +22,7 @@ load_calib_object <- function(calib_object) {
   } else {
     message("No calib_object file found. initializing the state and returning")
     calib_object <- initialize_state(calib_object)
-    make_folders(calib_object)
+    make_directories(calib_object)
   }
   calib_object
 }

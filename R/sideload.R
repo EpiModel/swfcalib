@@ -30,3 +30,7 @@ get_sideload_dir <- function(calib_object) {
   fs::path(root_directory, "sideloads")
 }
 
+clear_sideloads <- function(calib_object) {
+  sideload_dir <- get_sideload_dir(calib_object)
+  if (fs::dir_exists(sideload_dir)) fs::dir_delete(sideload_dir)
+}
