@@ -13,7 +13,7 @@ make_job_rmd <- function(job_assess) {
   dplyr::tibble(
     target_name = job_assess$infos$targets,
     target_value = job_assess$infos$targets_val
-  ) |> knitr::kable() |> print()
+  ) |> knitr::kable(align = "ll") |> print()
 
   dplyr::tibble(
     parameter = job_assess$infos$params,
@@ -22,7 +22,7 @@ make_job_rmd <- function(job_assess) {
       \(x) paste0(x[1], " - ", x[2]),
       ""
     )
-  ) |> knitr::kable() |> print()
+  ) |> knitr::kable(align = "ll") |> print()
 
   cat("\n\n")
 
@@ -67,6 +67,7 @@ render_assessment <- function(path_to_assessments,
     system.file("rmd/assessment.Rmd", package = "swfcalib"),
     output_file = output_filename,
     output_dir = output_dir,
+    knit_root_dir = getwd(),
     params = list(path_to_assessments = path_to_assessments)
   )
 }
