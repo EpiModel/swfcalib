@@ -1,79 +1,84 @@
-make_rmse_plot <- function(job) {
-  ggplot(job$measures, aes(x = iteration, y = rmse_mean)) +
-    geom_line() +
-    geom_ribbon(
-      aes(ymin = rmse_mean - rmse_sd, ymax = rmse_mean + rmse_sd),
+make_rmse_plot <- function(job_assess) {
+  d <- job_assess$measures
+  ggplot2::ggplot(d, ggplot2::aes(x = .data$iteration, y = .data$rmse_mean)) +
+    ggplot2::geom_line() +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(ymin = rmse_mean - rmse_sd, ymax = rmse_mean + rmse_sd),
       alpha = 0.3
     ) +
-    scale_y_log10() +
-    theme_light() +
-    labs(
-      title = paste0("RMSE Evolution for: ", job$infos$job_id),
+    ggplot2::scale_y_log10() +
+    ggplot2::theme_light() +
+    ggplot2::labs(
+      title = paste0("RMSE Evolution for: ", job_assess$infos$job_id),
       x = "Iteration",
       y = "RMSE \n(log10 scale)"
   )
 }
 
-make_param_volume_plot <- function(job) {
-  ggplot(job$measures, aes(x = iteration, y = param_volume)) +
-    geom_line() +
-    scale_y_log10() +
-    theme_light() +
-    labs(
+make_param_volume_plot <- function(job_assess) {
+  d <- job_assess$measures
+  ggplot2::ggplot(d, ggplot2::aes(x = .data$iteration,
+                                  y = .data$param_volume)) +
+    ggplot2::geom_line() +
+    ggplot2::scale_y_log10() +
+    ggplot2::theme_light() +
+    ggplot2::labs(
       title =
-        paste0("Parameter Space Volume Evolution for: ", job$infos$job_id),
+        paste0("Parameter Space Volume Evolution for: ",
+               job_assess$infos$job_id),
       x = "Iteration",
       y = "Parameter Space Volume \n(log10 scale)"
     )
 }
 
-make_param_spread_plot <- function(job, param) {
-  d <- job$measures
+make_param_spread_plot <- function(job_assess, param) {
+  d <- job_assess$measures
   d[["y"]] <- d[[paste0("spread__", param)]]
-  ggplot(d, aes(x = iteration, y = y)) +
-    geom_line() +
-    scale_y_log10() +
-    theme_light() +
-    labs(
+  ggplot2::ggplot(d, ggplot2::aes(x = .data$iteration, y = .data$y)) +
+    ggplot2::geom_line() +
+    ggplot2::scale_y_log10() +
+    ggplot2::theme_light() +
+    ggplot2::labs(
       title = paste0("Spread of Parameter: ", param),
       x = "Iteration",
       y = "Spread \n(log10 scale)"
     )
 }
 
-make_target_err_plot <- function(job, target) {
-  d <- job$measures
+make_target_err_plot <- function(job_assess, target) {
+  d <- job_assess$measures
   d[["y"]] <- d[[paste0("mean_err__", target)]]
   d[["ys"]] <- d[[paste0("sd_err__", target)]]
-  ggplot(d, aes(x = iteration, y = y)) +
-    geom_line() +
-    geom_ribbon(
-      aes(ymin = y - ys, ymax = y + ys),
+  ggplot2::ggplot(d, ggplot2::aes(x = .data$iteration, y = .data$y)) +
+    ggplot2::geom_line() +
+    ggplot2::geom_ribbon(
+     ggplot2::aes(ymin = .data$y - .data$ys, ymax = .data$y + .data$ys),
       alpha = 0.3
     ) +
-    geom_hline(yintercept = 0, linetype = "dashed") +
-    theme_light() +
-    labs(
+    ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
+    ggplot2::theme_light() +
+    ggplot2::labs(
       title = paste0("Mean Error on: ", target),
       x = "Iteration",
-      y = "Mean Error"
+      y = "Error \n(mean + sd)"
     )
 }
 
-make_job_plots <- function(job) {
+make_job_plots <- function(job_assess) {
   out <- list()
-  out$rmse <- make_rmse_plot(job)
-  out$volume <- make_param_volume_plot(job)
-  out$params <- lapply(job$infos$params, make_param_spread_plot, job = job)
-  names(out$params) <- job$infos$params
-  out$targets <- lapply(job$infos$targets, make_target_err_plot, job = job)
-  names(out$targets) <- job$infos$targets
+  infos <- job_assess$infos
+  out$rmse <- make_rmse_plot(job_assess)
+  out$volume <- make_param_volume_plot(job_assess)
+  out$params <- lapply(infos$params, make_param_spread_plot, job = job_assess)
+  names(out$params) <- infos$params
+  out$targets <- lapply(infos$targets, make_target_err_plot, job = job_assess)
+  names(out$targets) <- infos$targets
   out
 }
 
-make_wave_plots <- function(wave) {
-  out <- lapply(wave, make_job_plots)
-  names(out) <- vapply(wave, function(x) x$infos$job_id, character(1))
+make_wave_plots <- function(wave_assess) {
+  out <- lapply(wave_assess, make_job_plots)
+  names(out) <- vapply(wave_assess, function(x) x$infos$job_id, character(1))
   out
 }
 
