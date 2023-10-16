@@ -67,6 +67,6 @@ render_assessment <- function(path_to_assessments,
     system.file("rmd/assessment.Rmd", package = "swfcalib"),
     output_file = output_filename,
     output_dir = output_dir,
-    params = list(assessments = readRDS(path_to_assessments))
+    params = list(path_to_assessments = path_to_assessments)
   )
 }
