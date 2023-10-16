@@ -35,7 +35,7 @@ calibration_step1 <- function(calib_object, n_cores) {
 #' @param batch_num the batch number for the current proposal
 #' @param n_batches the total number of batches for this step
 #'
-#' @inheritsParams calibration_step1
+#' @inheritParams calibration_step1
 #'
 #' @export
 calibration_step2 <- function(calib_object, n_cores, batch_num, n_batches) {
@@ -71,7 +71,7 @@ calibration_step2 <- function(calib_object, n_cores, batch_num, n_batches) {
 #' Having this as a separate step allows a mail to be send at the end of the
 #' calibration
 #'
-#' @inheritsParams calibration_step1
+#' @inheritParams calibration_step1
 #'
 #' @export
 calibration_step3 <- function(calib_object) {
