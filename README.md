@@ -17,17 +17,23 @@ status](https://www.r-pkg.org/badges/version/slurmworkflow)](https://CRAN.R-proj
 multi-parameters multi-outputs models ran on
 [Slurm](https://slurm.schedmd.com/) equipped HPC.
 
-## Specific problems it solves
+## Should you use `swfcalib`
 
-`swfcalib` was build out of necessity to solve a specific set of
-problems:
+`swfcalib` is not the simplest calibration system to set up. It was
+designed to solve a specific set of problems listed below. If you
+already have a system that works well you should probably not consider
+`swfcalib`.
 
-- very noisy model outputs
-- expensive model runs
-- many parameters to calibrate
-- many outputs to match to their targets
-- impossibility of running a pilot job (long running job)
-- some knowledge about the parameters and outputs relationship
+However, if you have the following issues, `swfcalib` may be for you:
+
+- your model have many parameters to calibrate and produces many
+  outputs.
+- you have an idea of how some parameters influence only some outputs
+  (see example below)
+- your outputs are very noisy
+- you cannot or don’t want to have a [Slurm](https://slurm.schedmd.com/)
+  job that runs continuously for the whole duration of the calibration
+  process (a few days to several weeks)
 
 By using [`slurmworkflow`](https://github.com/EpiModel/slurmworkflow),
 `swfcalib` can implement a loop like behavior in
