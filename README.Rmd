@@ -85,6 +85,7 @@ needed and where most parameters are independent or conditionally independent.
 `swfcalib` makes no assumptions on how a set of parameters should be changed
 and how the quality of fit is assessed. It is up to the user to provide the
 mechanism to:
+
 - produce the next *proposals* to be tested
 - assess the quality of the fit
 
