@@ -41,10 +41,22 @@ mutate_calib_state <- function(calib_object, item, value) {
   calib_object
 }
 
-
 update_done_status <- function(calib_object, job_results) {
   done <- !any(vapply(job_results, is.null, logical(1)))
   mutate_done_status(calib_object, done)
+}
+
+mutate_jobs_done_status <- function(calib_object, done) {
+  mutate_calib_state(calib_object, "jobs_done", done)
+}
+
+update_jobs_done_status <- function(calib_object, job_results) {
+  done <- !vapply(job_results, is.null, logical(1))
+  mutate_jobs_done_status(calib_object, done)
+}
+
+get_jobs_done_status <- function(calib_object) {
+  calib_object$state$jobs_done
 }
 
 update_calibration_state <- function(calib_object, results) {

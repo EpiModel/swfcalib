@@ -44,5 +44,9 @@ initialize_state <- function(calib_object) {
     default_proposal = calib_object$config$default_proposal
   )
   calib_object <- initialize_job_ids(calib_object)
+  calib_object <- mutate_jobs_done_status(
+    calib_object,
+    rep(FALSE, length(get_current_jobs(calib_object)))
+  )
   calib_object
 }

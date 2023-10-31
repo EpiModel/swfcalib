@@ -34,6 +34,10 @@ increment_wave <- function(calib_object) {
   calib_object <- mutate_done_status(calib_object, FALSE)
   calib_object <- mutate_calib_state(calib_object, "iteration", 1)
   calib_object <- mutate_calib_state(calib_object, "wave", current_wave + 1)
+  calib_object <- mutate_jobs_done_status(
+    calib_object,
+    rep(FALSE, length(get_current_jobs(calib_object)))
+  )
   clear_sideloads(calib_object)
   make_directories(calib_object)
   calib_object
