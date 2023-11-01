@@ -329,7 +329,7 @@ waves = list(
     )
 ```
 
-## Calibration jobs
+### Calibration jobs
 
 A calibration *job* is a `list` with 6 elements:
 
@@ -357,9 +357,9 @@ job1 = list(
     hiv.trans.scale_2 = sample(seq(0.2, 0.6, length.out = n_sims)),
     hiv.trans.scale_3 = sample(seq(0.2, 0.6, length.out = n_sims))
   ),
-  make_next_proposals = make_range_proposer(n_sims),
-  get_result = determ_trans_end(
-    retain_prop = 0.3,
+  make_next_proposals =
+    swfcalib::make_proposer_se_range(n_sims, retain_prop = 0.3),
+  get_result = swfcalib::determ_end_thresh(
     thresholds = rep(0.02, 3),
     n_enough = 100
   )
@@ -368,7 +368,9 @@ job1 = list(
 
 ### Complete configuration
 
-Below is the complete `calib_object` defined locally:
+Below is the complete `calib_object` defined locally. Note that we define an
+`n_sims` variable at the beginning and reuse it all over the configuration
+to ensure that we have the correct number of proposals at each step.
 
 ```r
 n_sims  <- 400
@@ -377,12 +379,12 @@ calib_object <- list(
   config = list(
     simulator = model_fun,
     default_proposal = dplyr::tibble(
-      hiv.test.rate_1 = 0.004123238,
-      hiv.test.rate_2 = 0.003771226,
-      hiv.test.rate_3 = 0.005956663,
-      tx.init.rate_1 = 0.2981623,
-      tx.init.rate_2 = 0.3680919,
-      tx.init.rate_3 = 0.358254,
+      hiv.test.rate_1   = 0.004123238,
+      hiv.test.rate_2   = 0.003771226,
+      hiv.test.rate_3   = 0.005956663,
+      tx.init.rate_1    = 0.2981623,
+      tx.init.rate_2    = 0.3680919,
+      tx.init.rate_3    = 0.358254,
       hiv.trans.scale_1 = 2.470962,
       hiv.trans.scale_2 = 0.4247816,
       hiv.trans.scale_3 = 0.3342994
@@ -399,9 +401,9 @@ calib_object <- list(
         params = c("hiv.test.rate_1"), # target: 0.00385
         initial_proposals = dplyr::tibble(
           hiv.test.rate_1 = seq(0.002, 0.006, length.out = n_sims),
-          ),
-        make_next_proposals = make_shrink_proposer(n_sims),
-        get_result = determ_poly_end(0.001, poly_n = 5)
+        ),
+        make_next_proposals = swfcalib::make_shrink_proposer(n_sims, shrink = 2),
+        get_result = swfcalib::determ_poly_end(0.001, poly_n = 5)
       ),
       job2 = list(
         targets = "cc.dx.H",
@@ -410,8 +412,8 @@ calib_object <- list(
         initial_proposals = dplyr::tibble(
           hiv.test.rate_2 = seq(0.002, 0.006, length.out = n_sims),
         ),
-        make_next_proposals = make_shrink_proposer(n_sims),
-        get_result = determ_poly_end(0.001, poly_n = 5)
+        make_next_proposals = swfcalib::make_shrink_proposer(n_sims, shrink = 2),
+        get_result = swfcalib::determ_poly_end(0.001, poly_n = 5)
         ),
       job3 = list(
         targets = "cc.dx.W",
@@ -420,9 +422,9 @@ calib_object <- list(
         initial_proposals = dplyr::tibble(
           hiv.test.rate_3 = seq(0.004, 0.008, length.out = n_sims),
         ),
-        make_next_proposals = make_shrink_proposer(n_sims),
-        get_result = determ_poly_end(0.001, poly_n = 5)
-        ),
+        make_next_proposals = swfcalib::make_shrink_proposer(n_sims, shrink = 2),
+        get_result = swfcalib::determ_poly_end(0.001, poly_n = 5)
+      ),
       job4 = list(
         targets = paste0("cc.linked1m.", c("B", "H", "W")),
         targets_val = c(0.829, 0.898, 0.881),
@@ -432,11 +434,11 @@ calib_object <- list(
           tx.init.rate_2 = sample(tx.init.rate_1),
           tx.init.rate_3 = sample(tx.init.rate_1),
         ),
-        make_next_proposals = make_ind_shrink_proposer(n_sims),
-        get_result = determ_ind_poly_end(0.001, poly_n = 3)
+        make_next_proposals = swfcalib::make_shrink_proposer(n_sims, shrink = 2),
+        get_result = swfcalib::determ_poly_end(0.001, poly_n = 3)
       )
     ),
-    wave3 = list(
+    wave2 = list(
       job1 = list(
         targets = paste0("i.prev.dx.", c("B", "H", "W")),
         targets_val = c(0.33, 0.127, 0.09),
@@ -446,136 +448,65 @@ calib_object <- list(
           hiv.trans.scale_2 = sample(seq(0.2, 0.6, length.out = n_sims)),
           hiv.trans.scale_3 = sample(seq(0.2, 0.6, length.out = n_sims))
         ),
-        make_next_proposals = make_range_proposer(n_sims),
-        get_result = determ_trans_end(
-          retain_prop = 0.3,
+        make_next_proposals =
+          swfcalib::make_proposer_se_range(n_sims, retain_prop = 0.3),
+        get_result = swfcalib::determ_end_thresh(
           thresholds = rep(0.02, 3),
           n_enough = 100
         )
       )
     )
   )
-  # state = list() # managed internally
 )
 ```
 
-# TODO #
+## Proposers and calibration check
 
-- put the functions here into swfcalib package
-- finish the vignette
-  - explain the proposers and checkers
-  - explain the swf steps
+As mentioned earlier, each calibration *job* needs a function to define which
+proposal to make at the next iteration (`make_next_proposals`) and a function
+to assess if the calibration is finished (`get_result`).
 
+In this section we will explore these functions and what they do in each job.
 
+### HIV test rate
 
+The 3 *jobs* related to `hiv.test.rate` and proportion of diagnosed
+among infected (`cc.dx`) use the same approach:
 
+The proposer function is generated by a [function factory](https://adv-r.hadley.nz/function-factories.html):
+`make_shrink_proposer(n_sims, shrink = 2)`. This proposer will shrink the range
+of proposals by a factor 2 around the best guess so far.
 
+The calibration assessor is made by `determ_poly_end(0.001, poly_n = 5)`. This
+function fits a linear model with a degree 5 polynomial between the parameter
+and the output. It then predict the best value for the parameter. This value
+is later shared to the proposer to shrink the range around it. The calibration
+is considered finished when the predicted value is less than `threshold` away
+from the target (here `0.001`) AND when the prediction is not improving after
+the last iteration.
 
+### Linkage to care
 
+Linkage to care uses the same functions but all 3 parameters and targets are
+fitted at once. This here implies that a single model is fitted for all the
+data. It works very well in this specific case as the relationship between
+linkage to care and treatment uptake rate is consistent over the three groups.
 
+### HIV prevalence
 
+HIV prevalence and transmission scale is harder to calibrate as the 3
+parameters and outputs are linked together.
 
+Therefore a more basic approach is used, for the proposals, at each iteration
+the squared error over all 3 targets is calculated for each proposal, then
+the 30% best are kept. The ranges for the next round of proposals are the
+ranges of these best previous rounds. The function factory here is
+`make_proposer_se_range`. It takes a `retain_prop` argument that governs which
+proportion of the simulations are used to define the new ranges.
 
+The calibration is considered when 100 simulations where the 3 outputs are less
+than `thresholds` away from there respective targets. The `determ_end_thresh`
+function factory allow us to define the number of *good* simulations required
+and the thresholds for each output.
 
-
-`swfcalib` allows the calibration of a *model* where a set of *outcomes* are to
-be matched specific *targets*. We specify which *outcome* is governed by what
-*parameter* in the *calibration object*.
-
-`swfcalib` defines three simple `slurmworkflow` steps:
-
-1. process the *model* runs *outcomes* and choose what to do next
-   - if the calibration is complete, go to step 3
-   - if not, make new *parameter* proposals and go to step 2
-2. run the *model* with each *parameter* proposals and go back to step 1
-3. wrap up the calibration, save the accepted set of *parameters* and all the
-   results
-
-## Parameters and Outcomes
-
-In `swfcalib`, *model* is a function that takes a 1 row `tibble` of **all** the
-parameters and return a 1 row `tibble` of **all** the outcomes.
-
-However, calibrating all parameters at once with all outcomes at once may not be
-the most efficient approach, especially when known independence or conditional
-independence exists among parameters and outcomes.
-
-In EpiModelHIV models like [this published
-one](https://github.com/EpiModel/CombPrevNet), the portion of individuals
-infected by HIV that are diagnosed and the portion of diagnosed that are linked
-to care are two independent metrics. They are respectively affected by the
-HIV test rate and the rate of treatment linkage.
-
-Therefore, we can calibrate these two parameters on the same set of simulations.
-
-On the other hand, the portion of HIV diagnosed that are virally suppressed
-depend on the test rate, linkage to care and retention in care. To calibrate this
-last one, we can either Calibrate everything at once, 3 parameters and 3 outcomes.
-Doing so is quite hard in our models due to the noisy nature of our results.
-
-The other approach is to calibrate them sequentially. A first wave of
-calibration tackles the first two in parallel and a second one the third. This
-approach convert one hard and long problem to solve into three simple and quick
-one.
-
-A word of caution. This method is very efficient but requires a good
-understanding of all the processes at hand to ensure the independence of the
-parameters. Fortunately, if such independence does not exists, the final
-calibration will be visibly off.
-
-## Calibration Waves, Jobs and Iteration
-
-### Job
-
-Formally, `swfcalib` defines a *job* a set of *parameters* to be calibrated by
-trying to make a set of *outcomes* reach a set of *targets*.
-
-Each *job* needs a function to make the next set of *parameter* proposals to
-test as well as a function checking if the proposals gave sufficiently good
-results. This latter function is in charge of stopping the calibration process
-for the current job.
-
-### Wave
-
-A *wave* is a set of multiple jobs that can be run in parallel (i.e.
-independent from one another).
-
-In practice, `swfcalib` takes the proposals from all the jobs in a wave, combine
-them and run one simulation per proposal. If you have a 3 job wave, each making
-10 proposal, only 10 simulations will be run. On the evaluation step, each job
-will only assess the quality of it's own outcomes.
-
-Once all the jobs in a wave are finished, the system moves to the next one if
-any, using the results of the previous ones.
-
-## Data Structures
-
-### Parameter Proposals
-
-A set of parameter proposals is a `tibble` with 3 mandatory columns:
-
-- `.proposals_index`: the index of the proposal for this iteration
-- `.wave`: the number of the current wave
-- `.iteration`: the number of the current iteration
-
-plus one column per parameter and each row represent a different unique
-proposal.
-
-### Outcomes
-
-A set of outcomes is a `tibble` with 3 mandatory columns:
-
-- `.proposals_index`: the index of the proposal for this iteration
-- `.wave`: the number of the current wave
-- `.iteration`: the number of the current iteration
-
-plus one column per outcome value and each row represent the outcome from a
-specific proposal.
-
-### Results
-
-A set of results is the join of proposals and outcomes. It is a `tibble` with
-
-- all parameter columns
-- the three mandatory columns `.proposals_index`, `.wave`, `.iteration`
-- all outcome columns
+## Running a calibration system

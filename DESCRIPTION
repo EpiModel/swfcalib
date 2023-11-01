@@ -29,3 +29,4 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+URL: https://epimodel.github.io/swfcalib/
