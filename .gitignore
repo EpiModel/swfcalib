@@ -1,0 +1,12 @@
+inst/doc
+/doc/
+/Meta/
+/renv/
+.Rproj.user
+.Rhistory
+.Rprofile
+.RData
+.Ruserdata
+.DS_Store
+renv/
+docs

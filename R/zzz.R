@@ -1,2 +1,2 @@
-#' @ImportFrom dplyr .data
+#' @importFrom dplyr .data
 NULL

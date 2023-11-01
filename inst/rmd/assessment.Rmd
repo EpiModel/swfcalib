@@ -1,0 +1,19 @@
+---
+title: "Auto Calibration Assessment"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapse: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r results='asis', warning=FALSE, message=FALSE, echo=FALSE}
+assessments <- readRDS(path_to_assessments)
+for (i in seq_along(assessments)) {
+  make_wave_rmd(assessments, i)
+}
+```
