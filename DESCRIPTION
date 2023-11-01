@@ -17,6 +17,7 @@ Imports:
    future.apply,
    slurmworkflow,
    fs,
+   lhs,
    dplyr
 Remotes:
     github::EpiModel/slurmworkflow

@@ -1,5 +1,5 @@
 #' @export
-make_proposer_sdse_range <- function(n_new, retain_prop = 0.2) {
+make_proposer_se_range <- function(n_new, retain_prop = 0.2) {
   force(n_new)
   force(retain_prop)
   function(calib_object, job, results) {
@@ -11,7 +11,7 @@ make_proposer_sdse_range <- function(n_new, retain_prop = 0.2) {
     for (i in seq_along(job$targets)) {
       t <- job$targets_val[i]
       vs <- values[[i]]
-      params[[".SE_score"]] <- params[[".SE_score"]] + ((vs - t) / t)^2
+      params[[".SE_score"]] <- params[[".SE_score"]] + (vs - t)^2
     }
 
     params <- dplyr::arrange(params, .data$.SE_score)
@@ -44,7 +44,7 @@ make_shrink_proposer <- function(n_new, shrink = 2) {
   function(calib_object, job, results) {
     centers <- swfcalib::load_sideload(calib_object, job)$centers
     if (is.null(centers)) {
-      centers <- rep(NA, length(job$targets))
+      stop("No centers were provided for shrinkage, abort!")
     }
 
     outs <- list()
@@ -55,9 +55,6 @@ make_shrink_proposer <- function(n_new, shrink = 2) {
         ]
       )
       spread <- (tar_range[2] - tar_range[1]) / shrink / 2
-      if (is.na(centers[i])) {
-        centers[i] <- mean(tar_range)
-      }
 
       proposals <- seq(
         max(centers[i] - spread, tar_range[1]),
