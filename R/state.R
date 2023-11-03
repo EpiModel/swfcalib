@@ -75,5 +75,5 @@ is_valid_iteration <- function(calib_object) {
 }
 
 is_calibration_complete <- function(calib_object) {
-  !is_valid_wave(calib_object)
+  is_last_wave(calib_object) && is_wave_done(calib_object)
 }
