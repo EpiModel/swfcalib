@@ -31,9 +31,9 @@ netstats <- readRDS("data/input/netstats.rds")
 est      <- readRDS("data/input/netest.rds")
 
 param <- param.net(
-  data.frame.params   = read.csv("data/input/params.csv"),
-  netstats            = netstats,
-  epistats            = epistats
+  data.frame.params = read.csv("data/input/params.csv"),
+  netstats          = netstats,
+  epistats          = epistats
 )
 
 init <- init_msm()
@@ -262,9 +262,9 @@ model <- function(proposal) {
   est      <- readRDS("data/input/netest.rds")
 
   param <- param.net(
-    data.frame.params   = read.csv("data/input/params.csv"),
-    netstats            = netstats,
-    epistats            = epistats
+    data.frame.params = read.csv("data/input/params.csv"),
+    netstats          = netstats,
+    epistats          = epistats
   )
 
   init <- init_msm()
@@ -349,12 +349,12 @@ config = list(
   n_sims = n_sims,
   max_iteration = 100,
   default_proposal = dplyr::tibble(
-    hiv.test.rate_1 = 0.004123238,
-    hiv.test.rate_2 = 0.003771226,
-    hiv.test.rate_3 = 0.005956663,
-    tx.init.rate_1 = 0.2981623,
-    tx.init.rate_2 = 0.3680919,
-    tx.init.rate_3 = 0.358254,
+    hiv.test.rate_1   = 0.004123238,
+    hiv.test.rate_2   = 0.003771226,
+    hiv.test.rate_3   = 0.005956663,
+    tx.init.rate_1    = 0.2981623,
+    tx.init.rate_2    = 0.3680919,
+    tx.init.rate_3    = 0.358254,
     hiv.trans.scale_1 = 2.470962,
     hiv.trans.scale_2 = 0.4247816,
     hiv.trans.scale_3 = 0.3342994
@@ -592,9 +592,9 @@ model <- function(proposal) {
   est      <- readRDS("data/input/netest.rds")
 
   param <- param.net(
-    data.frame.params   = read.csv("data/input/params.csv"),
-    netstats            = netstats,
-    epistats            = epistats
+    data.frame.params = read.csv("data/input/params.csv"),
+    netstats          = netstats,
+    epistats          = epistats
   )
 
   init <- init_msm()
@@ -719,7 +719,7 @@ calib_object <- list(
 hpc_configs <- EpiModelHPC::swf_configs_rsph(
   partition = "epimodel",
   r_version = "4.3",
-  mail_user = "user@emory.edu"
+  mail_user = "<your_user>@emory.edu"
 )
 
 wf <- create_workflow(
