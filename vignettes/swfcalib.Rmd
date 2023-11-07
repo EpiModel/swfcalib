@@ -589,7 +589,7 @@ model <- function(proposal) {
 
   epistats <- readRDS("data/input/epistats.rds")
   netstats <- readRDS("data/input/netstats.rds")
-  netest   <- readRDS("data/input/netest.rds")
+  est      <- readRDS("data/input/netest.rds")
 
   param <- param.net(
     data.frame.params   = read.csv("data/input/params.csv"),
