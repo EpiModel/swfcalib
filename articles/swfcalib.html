@@ -97,7 +97,7 @@ population of 100k Men who have Sex with Men (MSM).</p>
 <span><span class="va">init</span> <span class="op">&lt;-</span> <span class="fu">init_msm</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">control</span> <span class="op">&lt;-</span> <span class="fu">control_msm</span><span class="op">(</span></span>
-<span>  nsteps <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>  nsteps <span class="op">=</span> <span class="fl">52</span> <span class="op">*</span> <span class="fl">60</span>,</span>
 <span>  nsims  <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  ncores <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
@@ -122,11 +122,13 @@ for sake of simplicity in this example.</p>
 <h3 id="outputs">Outputs<a class="anchor" aria-label="anchor" href="#outputs"></a>
 </h3>
 <p>The first outputs are the proportion of HIV individuals who are
-diagnosed (i.e. aware of their status).Then is the proportion of HIV
-diagnosed who started treatment in less than a month after diagnosis.
-Finally, the prevalence of diagnosed HIV in the population is our final
-output of interest. As our population is race stratified between, black,
-hispanic and white, we get three time the number of outputs.</p>
+diagnosed (i.e. aware of their status).</p>
+<p>Then is the proportion of HIV diagnosed who started treatment in less
+than a month after diagnosis.</p>
+<p>Finally, the prevalence of diagnosed HIV in the population is our
+final output of interest.</p>
+<p>As our population is race stratified between, black, hispanic and
+white, we get three time the number of outputs.</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -191,11 +193,15 @@ hispanic and white, we get three time the number of outputs.</p>
 <h3 id="parameters">Parameters<a class="anchor" aria-label="anchor" href="#parameters"></a>
 </h3>
 <p>9 parameters will be calibrated to fit the model to these target
-values. The weekly probability of being tested for HIV. The weekly
-probability of starting treatment if diagnosed for HIV. And a
-<em>transmission scaler</em> which is a parameter that encompass all the
-mechanism affecting transmission that are not explicitly defined in the
-model.</p>
+values:</p>
+<ul>
+<li>The weekly probability of being tested for HIV.</li>
+<li>The weekly probability of starting treatment if diagnosed for
+HIV.</li>
+<li>A <em>transmission scaler</em> which is a parameter that encompass
+all the mechanism affecting transmission that are not explicitly defined
+in the model.</li>
+</ul>
 <table class="table">
 <thead><tr class="header">
 <th>Parameter Name</th>
@@ -267,6 +273,10 @@ influence the transmission in the other sub populations.</p>
 <code>i.prev.dx</code> only depends on the <code>hiv.trans.scale</code>
 parameters. Reducing a 9 parameters 3 outputs problem into a simpler 3
 parameters, 3 outputs one.</p>
+<p>The following graph illustrate these relationships.</p>
+<div class="figure">
+<img src="param-output.png" alt=""><p class="caption">Parameters - Output relationship</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="calibration-structure">Calibration structure<a class="anchor" aria-label="anchor" href="#calibration-structure"></a>
@@ -274,11 +284,11 @@ parameters, 3 outputs one.</p>
 <p>Knowing these parameters - outputs relationship, we can define a
 calibration structure to minimize the number of simulations
 required.</p>
-<p>A first wave will calibrate simulateanously the 3
+<p>A first wave will calibrate simultaneously the 3
 <code>hiv.test.rate</code> and the 3 <code>tx.init.rate</code>
 parameters. This means that each run of the simulation will test a value
 for each of these 6 parameters. This idea is similar <a href="https://en.wikipedia.org/wiki/Factorial_experiment" class="external-link">factorial
-experiment design</a> and is only possible because of the independance
+experiment design</a> and is only possible because of the independence
 between the parameters and their respective outcomes.</p>
 <p>After these 6 parameters are calibrated (i.e. given fixed and final
 values), the <code>hiv.trans.scale</code> parameters will be calibrated
@@ -288,7 +298,7 @@ to fit the <code>i.prev.dx</code> outcomes to their target values.</p>
 <h2 id="waves-and-jobs">Waves and jobs<a class="anchor" aria-label="anchor" href="#waves-and-jobs"></a>
 </h2>
 <p>To express this structure, we need to define calibration
-<em>jobs</em> that are be run in parallel within several
+<em>jobs</em> that are going to be run in parallel within several
 <em>waves</em>.</p>
 <p>In our example we will have two <em>waves</em>, the first one for the
 <code>hiv.test.rate</code> and <code>tx.init.rate</code> parameters and
@@ -358,7 +368,7 @@ column is an output for the calibration process. In this case,
 <span>  <span class="va">init</span> <span class="op">&lt;-</span> <span class="fu">init_msm</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="va">control</span> <span class="op">&lt;-</span> <span class="fu">control_msm</span><span class="op">(</span></span>
-<span>    nsteps <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>    nsteps <span class="op">=</span> <span class="fl">52</span> <span class="op">*</span> <span class="fl">60</span>,</span>
 <span>    nsims  <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>    ncores <span class="op">=</span> <span class="fl">1</span></span>
 <span>  <span class="op">)</span></span>
@@ -536,7 +546,7 @@ number of proposals at each step.</p>
 <span></span>
 <span><span class="va">calib_object</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    simulator <span class="op">=</span> <span class="va">model_fun</span>,</span>
+<span>    simulator <span class="op">=</span> <span class="va">model</span>,</span>
 <span>    default_proposal <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
 <span>      hiv.test.rate_1   <span class="op">=</span> <span class="fl">0.004123238</span>,</span>
 <span>      hiv.test.rate_2   <span class="op">=</span> <span class="fl">0.003771226</span>,</span>
@@ -626,8 +636,9 @@ number of proposals at each step.</p>
 to define which proposal to make at the next iteration
 (<code>make_next_proposals</code>) and a function to assess if the
 calibration is finished (<code>get_result</code>).</p>
-<p>In this section we will explore these functions and what they do in
-each job.</p>
+<p>We won’t get into the details of how these functions work but focus
+instead on their practical use. You can have a look at their respective
+documentation for more details.</p>
 <div class="section level3">
 <h3 id="hiv-test-rate">HIV test rate<a class="anchor" aria-label="anchor" href="#hiv-test-rate"></a>
 </h3>
@@ -639,13 +650,12 @@ factory</a>: <code>make_shrink_proposer(n_sims, shrink = 2)</code>. This
 proposer will shrink the range of proposals by a factor 2 around the
 best guess so far.</p>
 <p>The calibration assessor is made by
-<code>determ_poly_end(0.001, poly_n = 5)</code>. This function fits a
-linear model with a degree 5 polynomial between the parameter and the
-output. It then predict the best value for the parameter. This value is
-later shared to the proposer to shrink the range around it. The
-calibration is considered finished when the predicted value is less than
-<code>threshold</code> away from the target (here <code>0.001</code>)
-AND when the prediction is not improving after the last iteration.</p>
+<code>determ_poly_end(0.001, poly_n = 5)</code>. This function uses
+linear model with a degree 5 polynomial to predict the best value for
+the parameter. The calibration is considered finished when the predicted
+value is less than <code>threshold</code> away from the target (here
+<code>0.001</code>) AND when the prediction is not improving after the
+last iteration.</p>
 </div>
 <div class="section level3">
 <h3 id="linkage-to-care">Linkage to care<a class="anchor" aria-label="anchor" href="#linkage-to-care"></a>
@@ -661,14 +671,13 @@ consistent over the three groups.</p>
 </h3>
 <p>HIV prevalence and transmission scale is harder to calibrate as the 3
 parameters and outputs are linked together.</p>
-<p>Therefore a more basic approach is used, for the proposals, at each
-iteration the squared error over all 3 targets is calculated for each
-proposal, then the 30% best are kept. The ranges for the next round of
-proposals are the ranges of these best previous rounds. The function
+<p>At each iteration the squared error over all 3 targets is calculated
+for each proposal. The ranges for the next round of proposals are the
+ranges of these best 30% proposals of the previous rounds. The function
 factory here is <code>make_proposer_se_range</code>. It takes a
 <code>retain_prop</code> argument that governs which proportion of the
 simulations are used to define the new ranges.</p>
-<p>The calibration is considered when 100 simulations where the 3
+<p>The calibration is considered done when 100 simulations where the 3
 outputs are less than <code>thresholds</code> away from there respective
 targets. The <code>determ_end_thresh</code> function factory allow us to
 define the number of <em>good</em> simulations required and the
@@ -678,6 +687,229 @@ thresholds for each output.</p>
 <div class="section level2">
 <h2 id="running-a-calibration-system">Running a calibration system<a class="anchor" aria-label="anchor" href="#running-a-calibration-system"></a>
 </h2>
+<p>Now that all the pieces are ready, we can setup the workflow using
+the <a href="https://github.com/EpiModel/slurmworkflow" class="external-link"><code>slurmworkflow</code></a>
+package.</p>
+<p>This will allow the HPC to run the calibration steps in a loop until
+the calibration is finished.</p>
+<p>The following script setup a complete calibration workflow with what
+was defined so far.</p>
+<p>The main thing you may want to change in this script is the
+<code>batch_size</code> variable that governs how many sims are run in
+parallel on a single cluster. On the RSPH HPC we set it to 8. Therefore,
+50 batches of 8 are submitted to <code>slurm</code> at once to make the
+400 simulations requested per iteration.</p>
+<p>A mail is sent if a job fails or at the end of the 3rd calibration
+step. This latter indicate that the calibration process is done.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://epimodel.github.io/slurmworkflow/" class="external-link">"slurmworkflow"</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Define the `model` function</span></span>
+<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">proposal</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Load all required elements</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">EpiModelHIV</span><span class="op">)</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">epistats</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"data/input/epistats.rds"</span><span class="op">)</span></span>
+<span>  <span class="va">netstats</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"data/input/netstats.rds"</span><span class="op">)</span></span>
+<span>  <span class="va">netest</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"data/input/netest.rds"</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">param</span> <span class="op">&lt;-</span> <span class="fu">param.net</span><span class="op">(</span></span>
+<span>    data.frame.params   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"data/input/params.csv"</span><span class="op">)</span>,</span>
+<span>    netstats            <span class="op">=</span> <span class="va">netstats</span>,</span>
+<span>    epistats            <span class="op">=</span> <span class="va">epistats</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">init</span> <span class="op">&lt;-</span> <span class="fu">init_msm</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">control</span> <span class="op">&lt;-</span> <span class="fu">control_msm</span><span class="op">(</span></span>
+<span>    nsteps <span class="op">=</span> <span class="fl">52</span> <span class="op">*</span> <span class="fl">60</span>,</span>
+<span>    nsims  <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    ncores <span class="op">=</span> <span class="fl">1</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Proposal to scenario -------------------------------------------------------</span></span>
+<span>  <span class="va">scenario</span> <span class="op">&lt;-</span> <span class="fu">EpiModelHPC</span><span class="fu">::</span><span class="fu">swfcalib_proposal_to_scenario</span><span class="op">(</span><span class="va">proposal</span><span class="op">)</span></span>
+<span>  <span class="va">param_sc</span> <span class="op">&lt;-</span> <span class="fu">EpiModel</span><span class="fu">::</span><span class="fu">use_scenario</span><span class="op">(</span><span class="va">param</span>, <span class="va">scenario</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Run the simulation ---------------------------------------------------------</span></span>
+<span>  <span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu">netsim</span><span class="op">(</span><span class="va">est</span>, <span class="va">param_sc</span>, <span class="va">init</span>, <span class="va">control</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Process the results  -------------------------------------------------------</span></span>
+<span>  <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">sim</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">mutate_calibration_targets</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">time</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">time</span><span class="op">)</span> <span class="op">-</span> <span class="fl">52</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span></span>
+<span>      <span class="va">cc.dx.B</span>, <span class="va">cc.dx.H</span>, <span class="va">cc.dx.W</span>,</span>
+<span>      <span class="va">cc.linked1m.B</span>, <span class="va">cc.linked1m.H</span>, <span class="va">cc.linked1m.W</span>,</span>
+<span>      <span class="va">i.prev.dx.B</span>, <span class="va">i.prev.dx.H</span>, <span class="va">i.prev.dx.W</span>,</span>
+<span>    <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">.x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Return the one row `tibble`</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Create the `calib_object`</span></span>
+<span><span class="va">n_sims</span>  <span class="op">&lt;-</span> <span class="fl">400</span></span>
+<span><span class="va">calib_object</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    simulator <span class="op">=</span> <span class="va">model</span>,</span>
+<span>    default_proposal <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>      hiv.test.rate_1   <span class="op">=</span> <span class="fl">0.004123238</span>,</span>
+<span>      hiv.test.rate_2   <span class="op">=</span> <span class="fl">0.003771226</span>,</span>
+<span>      hiv.test.rate_3   <span class="op">=</span> <span class="fl">0.005956663</span>,</span>
+<span>      tx.init.rate_1    <span class="op">=</span> <span class="fl">0.2981623</span>,</span>
+<span>      tx.init.rate_2    <span class="op">=</span> <span class="fl">0.3680919</span>,</span>
+<span>      tx.init.rate_3    <span class="op">=</span> <span class="fl">0.358254</span>,</span>
+<span>      hiv.trans.scale_1 <span class="op">=</span> <span class="fl">2.470962</span>,</span>
+<span>      hiv.trans.scale_2 <span class="op">=</span> <span class="fl">0.4247816</span>,</span>
+<span>      hiv.trans.scale_3 <span class="op">=</span> <span class="fl">0.3342994</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    root_directory <span class="op">=</span> <span class="st">"data/calib"</span>,</span>
+<span>    max_iteration <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>    n_sims <span class="op">=</span> <span class="va">n_sims</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  waves <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    wave1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>      job1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>        targets <span class="op">=</span> <span class="st">"cc.dx.B"</span>,</span>
+<span>        targets_val <span class="op">=</span> <span class="fl">0.847</span>,</span>
+<span>        params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hiv.test.rate_1"</span><span class="op">)</span>, <span class="co"># target: 0.00385</span></span>
+<span>        initial_proposals <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>          hiv.test.rate_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.002</span>, <span class="fl">0.006</span>, length.out <span class="op">=</span> <span class="va">n_sims</span><span class="op">)</span>,</span>
+<span>        <span class="op">)</span>,</span>
+<span>        make_next_proposals <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="fu"><a href="../reference/make_shrink_proposer.html">make_shrink_proposer</a></span><span class="op">(</span><span class="va">n_sims</span>, shrink <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>        get_result <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="fu">determ_poly_end</span><span class="op">(</span><span class="fl">0.001</span>, poly_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span>      <span class="op">)</span>,</span>
+<span>      job2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>        targets <span class="op">=</span> <span class="st">"cc.dx.H"</span>,</span>
+<span>        targets_val <span class="op">=</span> <span class="fl">0.818</span>,</span>
+<span>        params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hiv.test.rate_2"</span><span class="op">)</span>, <span class="co"># target: 0.0038</span></span>
+<span>        initial_proposals <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>          hiv.test.rate_2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.002</span>, <span class="fl">0.006</span>, length.out <span class="op">=</span> <span class="va">n_sims</span><span class="op">)</span>,</span>
+<span>        <span class="op">)</span>,</span>
+<span>        make_next_proposals <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="fu"><a href="../reference/make_shrink_proposer.html">make_shrink_proposer</a></span><span class="op">(</span><span class="va">n_sims</span>, shrink <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>        get_result <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="fu">determ_poly_end</span><span class="op">(</span><span class="fl">0.001</span>, poly_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span>        <span class="op">)</span>,</span>
+<span>      job3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>        targets <span class="op">=</span> <span class="st">"cc.dx.W"</span>,</span>
+<span>        targets_val <span class="op">=</span> <span class="fl">0.862</span>,</span>
+<span>        params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hiv.test.rate_3"</span><span class="op">)</span>, <span class="co"># target: 0.0069</span></span>
+<span>        initial_proposals <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>          hiv.test.rate_3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.004</span>, <span class="fl">0.008</span>, length.out <span class="op">=</span> <span class="va">n_sims</span><span class="op">)</span>,</span>
+<span>        <span class="op">)</span>,</span>
+<span>        make_next_proposals <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="fu"><a href="../reference/make_shrink_proposer.html">make_shrink_proposer</a></span><span class="op">(</span><span class="va">n_sims</span>, shrink <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>        get_result <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="fu">determ_poly_end</span><span class="op">(</span><span class="fl">0.001</span>, poly_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span>      <span class="op">)</span>,</span>
+<span>      job4 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>        targets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"cc.linked1m."</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B"</span>, <span class="st">"H"</span>, <span class="st">"W"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>        targets_val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.829</span>, <span class="fl">0.898</span>, <span class="fl">0.881</span><span class="op">)</span>,</span>
+<span>        params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"tx.init.rate_"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span>,</span>
+<span>        initial_proposals <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>          tx.init.rate_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.5</span>, length.out <span class="op">=</span> <span class="va">n_sims</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>          tx.init.rate_2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">tx.init.rate_1</span><span class="op">)</span>,</span>
+<span>          tx.init.rate_3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">tx.init.rate_1</span><span class="op">)</span>,</span>
+<span>        <span class="op">)</span>,</span>
+<span>        make_next_proposals <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="fu"><a href="../reference/make_shrink_proposer.html">make_shrink_proposer</a></span><span class="op">(</span><span class="va">n_sims</span>, shrink <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>        get_result <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="fu">determ_poly_end</span><span class="op">(</span><span class="fl">0.001</span>, poly_n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span>      <span class="op">)</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    wave2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>      job1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>        targets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"i.prev.dx."</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B"</span>, <span class="st">"H"</span>, <span class="st">"W"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>        targets_val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.33</span>, <span class="fl">0.127</span>, <span class="fl">0.09</span><span class="op">)</span>,</span>
+<span>        params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"hiv.trans.scale_"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span>,</span>
+<span>        initial_proposals <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>          hiv.trans.scale_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">4</span>, length.out <span class="op">=</span> <span class="va">n_sims</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>          hiv.trans.scale_2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.6</span>, length.out <span class="op">=</span> <span class="va">n_sims</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>          hiv.trans.scale_3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.6</span>, length.out <span class="op">=</span> <span class="va">n_sims</span><span class="op">)</span><span class="op">)</span></span>
+<span>        <span class="op">)</span>,</span>
+<span>        make_next_proposals <span class="op">=</span></span>
+<span>          <span class="fu">swfcalib</span><span class="fu">::</span><span class="fu">make_proposer_se_range</span><span class="op">(</span><span class="va">n_sims</span>, retain_prop <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span>,</span>
+<span>        get_result <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="fu">determ_end_thresh</span><span class="op">(</span></span>
+<span>          thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>          n_enough <span class="op">=</span> <span class="fl">100</span></span>
+<span>        <span class="op">)</span></span>
+<span>      <span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Workflow ---------------------------------------------------------------------</span></span>
+<span></span>
+<span><span class="co"># Use preconfigured HPC settings</span></span>
+<span><span class="va">hpc_configs</span> <span class="op">&lt;-</span> <span class="fu">EpiModelHPC</span><span class="fu">::</span><span class="fu">swf_configs_rsph</span><span class="op">(</span></span>
+<span>  partition <span class="op">=</span> <span class="st">"epimodel"</span>,</span>
+<span>  r_version <span class="op">=</span> <span class="st">"4.3"</span>,</span>
+<span>  mail_user <span class="op">=</span> <span class="st">"user@emory.edu"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">wf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://epimodel.github.io/slurmworkflow/reference/create_workflow.html" class="external-link">create_workflow</a></span><span class="op">(</span></span>
+<span>  wf_name <span class="op">=</span> <span class="st">"Vignette_auto_calib"</span>,</span>
+<span>  default_sbatch_opts <span class="op">=</span> <span class="va">hpc_configs</span><span class="op">$</span><span class="va">default_sbatch_opts</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Calibration step 1</span></span>
+<span><span class="va">wf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://epimodel.github.io/slurmworkflow/reference/add_workflow_step.html" class="external-link">add_workflow_step</a></span><span class="op">(</span></span>
+<span>  wf_summary <span class="op">=</span> <span class="va">wf</span>,</span>
+<span>  step_tmpl <span class="op">=</span> <span class="fu"><a href="https://epimodel.github.io/slurmworkflow/reference/step_tmpl_do_call.html" class="external-link">step_tmpl_do_call</a></span><span class="op">(</span></span>
+<span>    what <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="va"><a href="../reference/calibration_step1.html">calibration_step1</a></span>,</span>
+<span>    args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>      n_cores <span class="op">=</span> <span class="fl">8</span>,</span>
+<span>      calib_object <span class="op">=</span> <span class="va">calib_object</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    setup_lines <span class="op">=</span> <span class="va">hpc_configs</span><span class="op">$</span><span class="va">r_loader</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  sbatch_opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="st">"cpus-per-task"</span> <span class="op">=</span> <span class="fl">8</span>,</span>
+<span>    <span class="st">"time"</span> <span class="op">=</span> <span class="st">"00:20:00"</span>,</span>
+<span>    <span class="st">"mem-per-cpu"</span> <span class="op">=</span> <span class="st">"4G"</span>,</span>
+<span>    <span class="st">"mail-type"</span> <span class="op">=</span> <span class="st">"FAIL"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Calibration step 2</span></span>
+<span><span class="va">batch_size</span> <span class="op">&lt;-</span> <span class="fl">8</span></span>
+<span><span class="va">batch_numbers</span> <span class="op">&lt;-</span> <span class="fu">swfcalib</span><span class="fu">:::</span><span class="fu">get_batch_numbers</span><span class="op">(</span><span class="va">calib_object</span>, <span class="va">batch_size</span><span class="op">)</span></span>
+<span><span class="va">wf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://epimodel.github.io/slurmworkflow/reference/add_workflow_step.html" class="external-link">add_workflow_step</a></span><span class="op">(</span></span>
+<span>  wf_summary <span class="op">=</span> <span class="va">wf</span>,</span>
+<span>  step_tmpl <span class="op">=</span> <span class="fu"><a href="https://epimodel.github.io/slurmworkflow/reference/step_tmpl_map.html" class="external-link">step_tmpl_map</a></span><span class="op">(</span></span>
+<span>    FUN <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="va"><a href="../reference/calibration_step2.html">calibration_step2</a></span>,</span>
+<span>    batch_num <span class="op">=</span> <span class="va">batch_numbers</span>,</span>
+<span>    setup_lines <span class="op">=</span> <span class="va">hpc_configs</span><span class="op">$</span><span class="va">r_loader</span>,</span>
+<span>    max_array_size <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>    MoreArgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>      n_cores <span class="op">=</span> <span class="va">batch_size</span>,</span>
+<span>      n_batches <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">batch_numbers</span><span class="op">)</span>,</span>
+<span>      calib_object <span class="op">=</span> <span class="va">calib_object</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  sbatch_opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="st">"cpus-per-task"</span> <span class="op">=</span> <span class="va">batch_size</span>,</span>
+<span>    <span class="st">"time"</span> <span class="op">=</span> <span class="st">"05:00:00"</span>,</span>
+<span>    <span class="st">"mem-per-cpu"</span> <span class="op">=</span> <span class="st">"5G"</span>,</span>
+<span>    <span class="st">"mail-type"</span> <span class="op">=</span> <span class="st">"FAIL"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Calibration step 3</span></span>
+<span><span class="va">wf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://epimodel.github.io/slurmworkflow/reference/add_workflow_step.html" class="external-link">add_workflow_step</a></span><span class="op">(</span></span>
+<span>  wf_summary <span class="op">=</span> <span class="va">wf</span>,</span>
+<span>  step_tmpl <span class="op">=</span> <span class="fu"><a href="https://epimodel.github.io/slurmworkflow/reference/step_tmpl_do_call.html" class="external-link">step_tmpl_do_call</a></span><span class="op">(</span></span>
+<span>    what <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="va"><a href="../reference/calibration_step3.html">calibration_step3</a></span>,</span>
+<span>    args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>      calib_object <span class="op">=</span> <span class="va">calib_object</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    setup_lines <span class="op">=</span> <span class="va">hpc_configs</span><span class="op">$</span><span class="va">r_loader</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  sbatch_opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="st">"cpus-per-task"</span> <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    <span class="st">"time"</span> <span class="op">=</span> <span class="st">"00:20:00"</span>,</span>
+<span>    <span class="st">"mem-per-cpu"</span> <span class="op">=</span> <span class="st">"8G"</span>,</span>
+<span>    <span class="st">"mail-type"</span> <span class="op">=</span> <span class="st">"END"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
