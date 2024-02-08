@@ -32,10 +32,7 @@ mutate_default_proposal <- function(calib_object, default_proposal) {
 make_proposals <- function(calib_object, results) {
   current_jobs <- get_current_jobs(calib_object, not_done_only = TRUE)
   if (get_current_iteration(calib_object) == 1) {
-    proposals <- lapply(
-      current_jobs,
-      function(job) sample(job$initial_proposals)
-    )
+    proposals <- lapply(current_jobs, function(job) job$initial_proposals)
   } else {
     proposals <- future.apply::future_lapply(
       current_jobs,
