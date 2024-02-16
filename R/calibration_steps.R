@@ -24,8 +24,8 @@ calibration_step1 <- function(calib_object, n_cores) {
   } else {
     proposals <- make_proposals(calib_object, results)
     save_proposals(calib_object, proposals)
-    save_calib_object(calib_object)
   }
+  save_calib_object(calib_object)
 
   print_log(calib_object)
 }
