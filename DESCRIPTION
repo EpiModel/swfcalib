@@ -1,5 +1,5 @@
 Package: swfcalib
-Title: What the Package Does (One Line, Title Case)
+Title: Automated the Calibration of Complex Models on Slurm Equipped HPC
 Version: 0.0.0.9000
 Authors@R:
     c(person(given = "Adrien",
@@ -7,7 +7,8 @@ Authors@R:
              role = c("aut", "cre"),
              email = "contact@aleguillou.org",
              comment = c(ORCID = "0000-0002-4791-418X")))
-Description: What the package does (one paragraph).
+Description: swfcalib is designed to automate the calibration of complex
+             multi-parameters multi-outputs models ran on Slurm equipped HPC.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Depends:
