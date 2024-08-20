@@ -1,42 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/404.html</loc>
-  </url>
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/articles/swfcalib.html</loc>
-  </url>
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/index.html</loc>
-  </url>
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/reference/calibration_step1.html</loc>
-  </url>
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/reference/calibration_step2.html</loc>
-  </url>
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/reference/calibration_step3.html</loc>
-  </url>
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/reference/load_sideload.html</loc>
-  </url>
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/reference/make_shrink_proposer.html</loc>
-  </url>
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/reference/render_assessment.html</loc>
-  </url>
-  <url>
-    <loc>https://epimodel.github.io/swfcalib/reference/save_sideload.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://epimodel.github.io/swfcalib/404.html</loc></url>
+<url><loc>https://epimodel.github.io/swfcalib/articles/index.html</loc></url>
+<url><loc>https://epimodel.github.io/swfcalib/articles/swfcalib.html</loc></url>
+<url><loc>https://epimodel.github.io/swfcalib/authors.html</loc></url>
+<url><loc>https://epimodel.github.io/swfcalib/index.html</loc></url>
+<url><loc>https://epimodel.github.io/swfcalib/reference/calibration_step1.html</loc></url>
+<url><loc>https://epimodel.github.io/swfcalib/reference/calibration_step2.html</loc></url>
+<url><loc>https://epimodel.github.io/swfcalib/reference/calibration_step3.html</loc></url>
+<url><loc>https://epimodel.github.io/swfcalib/reference/index.html</loc></url>
+<url><loc>https://epimodel.github.io/swfcalib/reference/load_sideload.html</loc></url>
+<url><loc>https://epimodel.github.io/swfcalib/reference/make_shrink_proposer.html</loc></url>
+<url><loc>https://epimodel.github.io/swfcalib/reference/render_assessment.html</loc></url>
+<url><loc>https://epimodel.github.io/swfcalib/reference/save_sideload.html</loc></url>
 </urlset>
+
