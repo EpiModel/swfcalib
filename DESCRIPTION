@@ -9,8 +9,7 @@ Authors@R:
              comment = c(ORCID = "0000-0002-4791-418X")))
 Description: swfcalib is designed to automate the calibration of complex
              multi-parameters multi-outputs models ran on Slurm equipped HPC.
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: MIT + file LICENSE
 Depends:
   R (>= 4.1.0)
 Imports:
