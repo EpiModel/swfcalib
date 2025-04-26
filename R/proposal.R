@@ -128,4 +128,3 @@ update_default_proposal <- function(calib_object, job_results) {
   }
   mutate_default_proposal(calib_object, default_proposal)
 }
-

@@ -13,7 +13,7 @@ get_param_type <- function(x) {
 
 save_calibrated_csv <- function(calib_object) {
   long_calib <- get_long_calibrated_proposal(calib_object)
-  readr::write_csv(long_calib, get_calibrated_csv_path(calib_object))
+  write.csv(long_calib, get_calibrated_csv_path(calib_object), row.names = FALSE)
 }
 
 wrap_up_calibration <- function(calib_object) {
@@ -27,4 +27,3 @@ wrap_up_calibration <- function(calib_object) {
   message("Calibration complete")
   print_log(calib_object)
 }
-

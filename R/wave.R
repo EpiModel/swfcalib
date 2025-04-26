@@ -50,4 +50,3 @@ increment_wave <- function(calib_object) {
   make_directories(calib_object)
   calib_object
 }
-
