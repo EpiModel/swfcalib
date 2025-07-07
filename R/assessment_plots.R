@@ -49,18 +49,24 @@ make_target_err_plot <- function(job_assess, target) {
   d <- job_assess$measures
   d[["y"]] <- d[[paste0("mean_err__", target)]]
   d[["ys"]] <- d[[paste0("sd_err__", target)]]
+  d[["ymin"]] <- d[[paste0("min_err__", target)]]
+  d[["ymax"]] <- d[[paste0("max_err__", target)]]
   ggplot2::ggplot(d, ggplot2::aes(x = .data$iteration, y = .data$y)) +
     ggplot2::geom_line() +
     ggplot2::geom_ribbon(
-     ggplot2::aes(ymin = .data$y - .data$ys, ymax = .data$y + .data$ys),
+      ggplot2::aes(ymin = .data$y - .data$ys, ymax = .data$y + .data$ys),
       alpha = 0.3
+    ) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(ymin = .data$ymin, ymax = .data$ymax),
+      alpha = 0.1
     ) +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
     ggplot2::theme_light() +
     ggplot2::labs(
       title = paste0("Mean Error on: ", target),
       x = "Iteration",
-      y = "Error \n(mean + sd)"
+      y = "Error \n(mean + sd + range)"
     )
 }
 

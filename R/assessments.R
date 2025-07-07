@@ -80,6 +80,8 @@ make_job_assessment <- function(calib_object, job, results) {
   out$measures[paste0("spread__", names(spreads))] <- as.list(spreads)
   out$measures[paste0("mean_err__", job$targets)] <- lapply(errors, mean)
   out$measures[paste0("sd_err__", job$targets)] <- lapply(errors, sd)
+  out$measures[paste0("min_err__", job$targets)] <- lapply(errors, min)
+  out$measures[paste0("max_err__", job$targets)] <- lapply(errors, max)
 
   out
 }
