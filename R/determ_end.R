@@ -15,9 +15,10 @@ determ_end_thresh <- function(thresholds, n_enough) {
     if (nrow(p_ok) > n_enough) {
       res <- p_ok[, job$params]
       # get the n_tuple where all values are the closest to the median
-      best <- dplyr::summarise(
+      # (standardized)
+      best <- dplyr::mutate(
         res,
-        dplyr::across(dplyr::everything(), ~ abs(.x - median(.x)))
+        dplyr::across(dplyr::everything(), \(x) abs(x - median(x)) / sd(x))
       )
       best <- which.min(rowSums(best))
       return(res[best, ])
