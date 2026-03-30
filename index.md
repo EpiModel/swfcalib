@@ -19,13 +19,13 @@ together support large-scale epidemic modeling on HPC clusters:
 │                     EpiModelHIV-Template                            │
 │  (project repo: workflows, data, params, calibration config)        │
 │                                                                     │
-│   ┌──────────────┐   ┌──────────────┐   ┌────────────────────────┐ │
-│   │  EpiModel /   │   │slurmworkflow │   │       swfcalib         │ │
-│   │ EpiModelHIV   │   │              │   │                        │ │
-│   │              │   │  Slurm step   │   │  calibration logic:    │ │
-│   │  simulation  │◄──┤  sequencing & ├──►│  waves, jobs,          │ │
-│   │  engine      │   │  job arrays   │   │  proposals, & results  │ │
-│   └──────────────┘   └──────────────┘   └────────────────────────┘ │
+│   ┌──────────────┐   ┌──────────────┐   ┌────────────────────────┐  │
+│   │  EpiModel /  │   │slurmworkflow │   │       swfcalib         │  │
+│   │ EpiModelHIV  │   │              │   │                        │  │
+│   │              │   │  Slurm step  │   │  calibration logic:    │  │
+│   │  simulation  │◄──┤  sequencing &├──►│  waves, jobs,          │  │
+│   │  engine      │   │  job arrays  │   │  proposals, & results  │  │
+│   └──────────────┘   └──────────────┘   └────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
