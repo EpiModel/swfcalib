@@ -7,7 +7,6 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![R-CMD-check](https://github.com/EpiModel/swfcalib/workflows/R-CMD-check/badge.svg)](https://github.com/EpiModel/swfcalib/actions)
 [![codecov](https://codecov.io/gh/EpiModel/swfcalib/branch/main/graph/badge.svg?token=eo2r0HeP8Z)](https://codecov.io/gh/EpiModel/swfcalib)
 <!-- badges: end -->
 
