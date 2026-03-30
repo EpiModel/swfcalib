@@ -50,66 +50,147 @@
 </h1></div>
 <!-- badges: start -->
 
-<p><code>swfcalib</code> is designed to automate the calibration of complex multi-parameters multi-outputs models ran on <a href="https://slurm.schedmd.com/" class="external-link">Slurm</a> equipped HPC.</p>
+<p><code>swfcalib</code> automates the calibration of complex multi-parameter, multi-output models on <a href="https://slurm.schedmd.com/" class="external-link">Slurm</a>-equipped HPC systems. It uses <a href="https://github.com/EpiModel/slurmworkflow" class="external-link"><code>slurmworkflow</code></a> to orchestrate an iterative propose-evaluate loop without requiring a long-running pilot job, and was built to calibrate stochastic network epidemic models developed with <a href="https://github.com/EpiModel/EpiModel" class="external-link"><code>EpiModel</code></a>.</p>
 <div class="section level2">
-<h2 id="should-you-use-swfcalib">Should you use <code>swfcalib</code>
-<a class="anchor" aria-label="anchor" href="#should-you-use-swfcalib"></a>
+<h2 id="role-in-the-epimodel-ecosystem">Role in the EpiModel Ecosystem<a class="anchor" aria-label="anchor" href="#role-in-the-epimodel-ecosystem"></a>
 </h2>
-<p><code>swfcalib</code> is not the simplest calibration system to set up. It was designed to solve a specific set of problems listed below. If you already have a system that works well you should probably not consider <code>swfcalib</code>.</p>
-<p>However, if you have the following issues, <code>swfcalib</code> may be for you:</p>
+<p><code>swfcalib</code> sits at the intersection of several EpiModel packages that together support large-scale epidemic modeling on HPC clusters:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>┌─────────────────────────────────────────────────────────────────────┐</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>│                     EpiModelHIV<span class="sc">-</span>Template                            │</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>│  (project repo<span class="sc">:</span> workflows, data, params, calibration config)        │</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>│                                                                     │</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>│   ┌──────────────┐   ┌──────────────┐   ┌────────────────────────┐ │</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>│   │  EpiModel <span class="sc">/</span>   │   │slurmworkflow │   │       swfcalib         │ │</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>│   │ EpiModelHIV   │   │              │   │                        │ │</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>│   │              │   │  Slurm step   │   │  calibration logic<span class="sc">:</span>    │ │</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>│   │  simulation  │◄──┤  sequencing <span class="sc">&amp;</span> ├──►│  waves, jobs,          │ │</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>│   │  engine      │   │  job arrays   │   │  proposals, <span class="sc">&amp;</span> results  │ │</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>│   └──────────────┘   └──────────────┘   └────────────────────────┘ │</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>└─────────────────────────────────────────────────────────────────────┘</span></code></pre></div>
+<div class="section level3">
+<h3 id="epimodel--epimodelhiv">EpiModel / EpiModelHIV<a class="anchor" aria-label="anchor" href="#epimodel--epimodelhiv"></a>
+</h3>
+<p><a href="https://github.com/EpiModel/EpiModel" class="external-link"><code>EpiModel</code></a> is the simulation engine for stochastic network epidemic models. <code>EpiModelHIV</code> extends it with HIV-specific modules. <code>swfcalib</code> treats the simulation as a black box: it passes a one-row tibble of parameter values (the <em>proposal</em>) to a user-defined simulator function and receives a one-row tibble of summary statistics (the <em>outcomes</em>) back. This means <code>swfcalib</code> is not limited to EpiModel – any model that conforms to this interface can be calibrated.</p>
+</div>
+<div class="section level3">
+<h3 id="slurmworkflow">slurmworkflow<a class="anchor" aria-label="anchor" href="#slurmworkflow"></a>
+</h3>
+<p><a href="https://github.com/EpiModel/slurmworkflow" class="external-link"><code>slurmworkflow</code></a> provides the mechanism for chaining Slurm jobs into multi-step workflows. <code>swfcalib</code> uses it to implement an iterative loop on the HPC:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Step 1</strong> (<code>calibration_step1</code>): Process results from the previous iteration, assess convergence, and generate new proposals (or advance to the next wave / finish).</li>
+<li>
+<strong>Step 2</strong> (<code>calibration_step2</code>): Run the simulation in parallel across a Slurm job array – one simulation per proposal. The last batch rewinds the workflow back to Step 1.</li>
+<li>
+<strong>Step 3</strong> (<code>calibration_step3</code>): Finalize calibration, export the calibrated parameter set.</li>
+</ol>
+<p>This looping structure means the calibration can run for days or weeks without a continuously running pilot job occupying a Slurm allocation.</p>
+</div>
+<div class="section level3">
+<h3 id="epimodelhiv-template">EpiModelHIV-Template<a class="anchor" aria-label="anchor" href="#epimodelhiv-template"></a>
+</h3>
+<p>The <a href="https://github.com/EpiModel/EpiModelHIV-Template" class="external-link">EpiModelHIV-Template</a> is a project template that provides the directory structure, workflow scripts, and configuration files for running EpiModelHIV analyses on an HPC. The template includes a calibration workflow that uses <code>swfcalib</code> + <code>slurmworkflow</code> out of the box. In practice, researchers:</p>
+<ol style="list-style-type: decimal">
+<li>Define their model’s simulator function and calibration targets in the template’s workflow scripts.</li>
+<li>Configure the <code>calib_object</code> (waves, jobs, proposers, convergence criteria).</li>
+<li>Use <code>slurmworkflow</code> to build the three-step workflow and submit it to the HPC.</li>
+<li>
+<code>swfcalib</code> iterates autonomously until all parameters converge or the iteration limit is reached.</li>
+<li>The calibrated parameters are exported as a CSV and fed into downstream simulation and analysis workflows defined in the template.</li>
+</ol>
+</div>
+</div>
+<div class="section level2">
+<h2 id="should-you-use-swfcalib">Should You Use swfcalib?<a class="anchor" aria-label="anchor" href="#should-you-use-swfcalib"></a>
+</h2>
+<p><code>swfcalib</code> is not the simplest calibration system to set up. It was designed to solve a specific set of problems. If you already have a system that works well, you should probably not switch to <code>swfcalib</code>.</p>
+<p>However, <code>swfcalib</code> may be a good fit if:</p>
 <ul>
-<li>your model have many parameters to calibrate and produces many outputs.</li>
-<li>you have an idea of how some parameters influence only some outputs (see example below)</li>
-<li>your outputs are very noisy</li>
-<li>you cannot or don’t want to have a <a href="https://slurm.schedmd.com/" class="external-link">Slurm</a> job that runs continuously for the whole duration of the calibration process (a few days to several weeks)</li>
+<li>Your model has many parameters to calibrate and produces many outputs.</li>
+<li>You have domain knowledge about which parameters influence which outputs (allowing decomposition into independent calibration jobs).</li>
+<li>Your model outputs are noisy and require many replications per parameter set.</li>
+<li>You cannot or do not want a Slurm job running continuously for the duration of the calibration (days to weeks).</li>
 </ul>
-<p>By using <a href="https://github.com/EpiModel/slurmworkflow" class="external-link"><code>slurmworkflow</code></a>, <code>swfcalib</code> can implement a loop like behavior in <a href="https://slurm.schedmd.com/" class="external-link">Slurm</a> without the need of a pilot job staying alive for the whole duration of the calibration process (sometimes several weeks).</p>
-<p><code>swfcalib</code> was created to calibrate epidemic models like <a href="https://github.com/EpiModel/DoxyPEP" class="external-link">this one</a>. These models have around 20 free parameters to calibrate and 20 outcomes to be matched to observed targets. However, knowledge of the model allow us to define many conditional one to one relationship between parameters and outcomes. <code>swfcalib</code> can use this knowledge to split the calibration into multiple waves of simpler parallel calibration jobs.</p>
 </div>
 <div class="section level2">
 <h2 id="design">Design<a class="anchor" aria-label="anchor" href="#design"></a>
 </h2>
-<p>The calibration process follows a proposal, validation loop. Where the model is run with a set of parameters and new proposals are made according to the results. This goes on until the model is fully calibrated.</p>
-<p>Terminology:</p>
+<p>The calibration process follows an iterative propose-evaluate loop: the model is run with a set of parameter proposals, results are assessed, and new proposals are generated. This continues until the model is fully calibrated.</p>
+<div class="section level3">
+<h3 id="terminology">Terminology<a class="anchor" aria-label="anchor" href="#terminology"></a>
+</h3>
 <ul>
 <li>
-<em>model</em>: a function taking a <em>proposal</em> and returning some <em>outcomes</em>.</li>
+<strong>Model</strong>: a function taking a <em>proposal</em> and returning some <em>outcomes</em>.</li>
 <li>
-<em>proposal</em>: a set of parameters values to be passed to the <em>model</em>
-</li>
+<strong>Proposal</strong>: a set of parameter values to pass to the model.</li>
 <li>
-<em>outcomes</em>: the output of a <em>model</em> run for a given <em>proposal</em>.</li>
+<strong>Outcomes</strong>: the output of a model run for a given proposal.</li>
 <li>
-<em>job</em>: a set of parameters to be calibrated by using a subset of the <em>outcomes</em>
-</li>
+<strong>Job</strong>: a calibration sub-problem – a set of parameters to calibrate using a subset of the outcomes.</li>
 <li>
-<em>wave</em>: a set of independent <em>jobs</em> that can be calibrated using the same run of the model.</li>
+<strong>Wave</strong>: a set of independent jobs that can be calibrated using the same model runs.</li>
 </ul>
-<p>The specificity of <code>swfcalib</code> lies in the ability to try many proposal at once on an HPC, and to set up this proposal validation loop without a long running orchestrating job (pilot job).</p>
-<p>The calibration is split into <em>waves</em>. Each wave can contains multiple <em>jobs</em>, each focusing on a set of parameters and related outcomes. This permits the parallel calibration of multiple independent parameters. At each <em>iteration</em>, the model is ran once per proposal, and each job gather the outcomes it needs to make its next proposal. Once all <em>jobs</em> in a <em>wave</em> are done, i.e. the parameters they govern are calibrated, the system moves to the next <em>wave</em>. This allows the sequential calibration of parameters when strong assumption about their independence can be made.</p>
-<p>This design was crafted for the very noisy models where many replications are needed and where most parameters are independent or conditionally independent.</p>
 </div>
-<div class="section level2">
-<h2 id="versatility">Versatility<a class="anchor" aria-label="anchor" href="#versatility"></a>
-</h2>
-<p><code>swfcalib</code> makes no assumptions on how a set of parameters should be changed and how the quality of fit is assessed. It is up to the user to provide the mechanism to:</p>
+<div class="section level3">
+<h3 id="waves-and-jobs">Waves and Jobs<a class="anchor" aria-label="anchor" href="#waves-and-jobs"></a>
+</h3>
+<p>The calibration is split into sequential <strong>waves</strong>. Each wave contains one or more <strong>jobs</strong> that run in parallel, each focusing on a subset of parameters and their related outcomes. At each iteration within a wave, the model is run once per proposal and each job evaluates only the outcomes it cares about.</p>
+<p>Once all jobs in a wave converge, their calibrated parameter values are locked in and the system advances to the next wave. This allows later waves to calibrate parameters that depend on those fixed earlier – for example, calibrating transmission scalers only after diagnosis and treatment rates have been determined.</p>
+</div>
+<div class="section level3">
+<h3 id="user-supplied-functions">User-Supplied Functions<a class="anchor" aria-label="anchor" href="#user-supplied-functions"></a>
+</h3>
+<p><code>swfcalib</code> makes no assumptions about how proposals should be generated or how convergence should be assessed. Each job requires two user-supplied functions:</p>
 <ul>
-<li>produce the next <em>proposals</em> to be tested</li>
-<li>assess the quality of the fit</li>
+<li>
+<code>make_next_proposals</code>: given current results, produce the next set of parameter proposals.</li>
+<li>
+<code>get_result</code>: given current results, determine if calibration is complete for this job (return a one-row tibble of calibrated values) or not yet (return <code>NULL</code>).</li>
 </ul>
-<p><code>swfcalib</code> provides some pre-built functions for this. See the getting started vignette.</p>
+<p><code>swfcalib</code> provides built-in function factories for common strategies:</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr class="header">
+<th>Function</th>
+<th>Strategy</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>make_proposer_se_range()</code></td>
+<td>Retain the best proposals (by squared error) and sample the next round from their ranges via Latin Hypercube Sampling.</td>
+</tr>
+<tr class="even">
+<td><code><a href="reference/make_shrink_proposer.html">make_shrink_proposer()</a></code></td>
+<td>Shrink the proposal range by a factor around the current best guess.</td>
+</tr>
+<tr class="odd">
+<td><code>determ_end_thresh()</code></td>
+<td>Finish when enough simulations produce outcomes within specified thresholds of the targets.</td>
+</tr>
+<tr class="even">
+<td><code>determ_poly_end()</code></td>
+<td>Fit a polynomial regression to predict the optimal parameter value; finish when predictions stabilize.</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>You can install the development version of <strong>swfcalib</strong> like so:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"EpiModel/swfcalib"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>See the <a href="https://epimodel.github.io/swfcalib/articles/swfcalib.html">Getting Started vignette</a> for a complete worked example calibrating an HIV epidemic model, including wave and job configuration, simulator function setup, and the <code>slurmworkflow</code> integration.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://epimodel.github.io/swfcalib/">swfcalib</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -140,7 +221,6 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
-<li><a href="https://CRAN.R-project.org/package=slurmworkflow" class="external-link"><img src="https://www.r-pkg.org/badges/version/slurmworkflow" alt="CRAN status"></a></li>
 <li><a href="https://github.com/EpiModel/swfcalib/actions" class="external-link"><img src="https://github.com/EpiModel/swfcalib/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://codecov.io/gh/EpiModel/swfcalib" class="external-link"><img src="https://codecov.io/gh/EpiModel/swfcalib/branch/main/graph/badge.svg?token=eo2r0HeP8Z" alt="codecov"></a></li>
 </ul>

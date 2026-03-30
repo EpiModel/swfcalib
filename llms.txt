@@ -1,87 +1,152 @@
 # swfcalib
 
-`swfcalib` is designed to automate the calibration of complex
-multi-parameters multi-outputs models ran on
-[Slurm](https://slurm.schedmd.com/) equipped HPC.
+`swfcalib` automates the calibration of complex multi-parameter,
+multi-output models on [Slurm](https://slurm.schedmd.com/)-equipped HPC
+systems. It uses
+[`slurmworkflow`](https://github.com/EpiModel/slurmworkflow) to
+orchestrate an iterative propose-evaluate loop without requiring a
+long-running pilot job, and was built to calibrate stochastic network
+epidemic models developed with
+[`EpiModel`](https://github.com/EpiModel/EpiModel).
 
-## Should you use `swfcalib`
+## Role in the EpiModel Ecosystem
+
+`swfcalib` sits at the intersection of several EpiModel packages that
+together support large-scale epidemic modeling on HPC clusters:
+
+``` R
+┌─────────────────────────────────────────────────────────────────────┐
+│                     EpiModelHIV-Template                            │
+│  (project repo: workflows, data, params, calibration config)        │
+│                                                                     │
+│   ┌──────────────┐   ┌──────────────┐   ┌────────────────────────┐ │
+│   │  EpiModel /   │   │slurmworkflow │   │       swfcalib         │ │
+│   │ EpiModelHIV   │   │              │   │                        │ │
+│   │              │   │  Slurm step   │   │  calibration logic:    │ │
+│   │  simulation  │◄──┤  sequencing & ├──►│  waves, jobs,          │ │
+│   │  engine      │   │  job arrays   │   │  proposals, & results  │ │
+│   └──────────────┘   └──────────────┘   └────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### EpiModel / EpiModelHIV
+
+[`EpiModel`](https://github.com/EpiModel/EpiModel) is the simulation
+engine for stochastic network epidemic models. `EpiModelHIV` extends it
+with HIV-specific modules. `swfcalib` treats the simulation as a black
+box: it passes a one-row tibble of parameter values (the *proposal*) to
+a user-defined simulator function and receives a one-row tibble of
+summary statistics (the *outcomes*) back. This means `swfcalib` is not
+limited to EpiModel – any model that conforms to this interface can be
+calibrated.
+
+### slurmworkflow
+
+[`slurmworkflow`](https://github.com/EpiModel/slurmworkflow) provides
+the mechanism for chaining Slurm jobs into multi-step workflows.
+`swfcalib` uses it to implement an iterative loop on the HPC:
+
+1.  **Step 1** (`calibration_step1`): Process results from the previous
+    iteration, assess convergence, and generate new proposals (or
+    advance to the next wave / finish).
+2.  **Step 2** (`calibration_step2`): Run the simulation in parallel
+    across a Slurm job array – one simulation per proposal. The last
+    batch rewinds the workflow back to Step 1.
+3.  **Step 3** (`calibration_step3`): Finalize calibration, export the
+    calibrated parameter set.
+
+This looping structure means the calibration can run for days or weeks
+without a continuously running pilot job occupying a Slurm allocation.
+
+### EpiModelHIV-Template
+
+The
+[EpiModelHIV-Template](https://github.com/EpiModel/EpiModelHIV-Template)
+is a project template that provides the directory structure, workflow
+scripts, and configuration files for running EpiModelHIV analyses on an
+HPC. The template includes a calibration workflow that uses `swfcalib` +
+`slurmworkflow` out of the box. In practice, researchers:
+
+1.  Define their model’s simulator function and calibration targets in
+    the template’s workflow scripts.
+2.  Configure the `calib_object` (waves, jobs, proposers, convergence
+    criteria).
+3.  Use `slurmworkflow` to build the three-step workflow and submit it
+    to the HPC.
+4.  `swfcalib` iterates autonomously until all parameters converge or
+    the iteration limit is reached.
+5.  The calibrated parameters are exported as a CSV and fed into
+    downstream simulation and analysis workflows defined in the
+    template.
+
+## Should You Use swfcalib?
 
 `swfcalib` is not the simplest calibration system to set up. It was
-designed to solve a specific set of problems listed below. If you
-already have a system that works well you should probably not consider
-`swfcalib`.
+designed to solve a specific set of problems. If you already have a
+system that works well, you should probably not switch to `swfcalib`.
 
-However, if you have the following issues, `swfcalib` may be for you:
+However, `swfcalib` may be a good fit if:
 
-- your model have many parameters to calibrate and produces many
-  outputs.
-- you have an idea of how some parameters influence only some outputs
-  (see example below)
-- your outputs are very noisy
-- you cannot or don’t want to have a [Slurm](https://slurm.schedmd.com/)
-  job that runs continuously for the whole duration of the calibration
-  process (a few days to several weeks)
-
-By using [`slurmworkflow`](https://github.com/EpiModel/slurmworkflow),
-`swfcalib` can implement a loop like behavior in
-[Slurm](https://slurm.schedmd.com/) without the need of a pilot job
-staying alive for the whole duration of the calibration process
-(sometimes several weeks).
-
-`swfcalib` was created to calibrate epidemic models like [this
-one](https://github.com/EpiModel/DoxyPEP). These models have around 20
-free parameters to calibrate and 20 outcomes to be matched to observed
-targets. However, knowledge of the model allow us to define many
-conditional one to one relationship between parameters and outcomes.
-`swfcalib` can use this knowledge to split the calibration into multiple
-waves of simpler parallel calibration jobs.
+- Your model has many parameters to calibrate and produces many outputs.
+- You have domain knowledge about which parameters influence which
+  outputs (allowing decomposition into independent calibration jobs).
+- Your model outputs are noisy and require many replications per
+  parameter set.
+- You cannot or do not want a Slurm job running continuously for the
+  duration of the calibration (days to weeks).
 
 ## Design
 
-The calibration process follows a proposal, validation loop. Where the
-model is run with a set of parameters and new proposals are made
-according to the results. This goes on until the model is fully
+The calibration process follows an iterative propose-evaluate loop: the
+model is run with a set of parameter proposals, results are assessed,
+and new proposals are generated. This continues until the model is fully
 calibrated.
 
-Terminology:
+### Terminology
 
-- *model*: a function taking a *proposal* and returning some *outcomes*.
-- *proposal*: a set of parameters values to be passed to the *model*
-- *outcomes*: the output of a *model* run for a given *proposal*.
-- *job*: a set of parameters to be calibrated by using a subset of the
-  *outcomes*
-- *wave*: a set of independent *jobs* that can be calibrated using the
-  same run of the model.
+- **Model**: a function taking a *proposal* and returning some
+  *outcomes*.
+- **Proposal**: a set of parameter values to pass to the model.
+- **Outcomes**: the output of a model run for a given proposal.
+- **Job**: a calibration sub-problem – a set of parameters to calibrate
+  using a subset of the outcomes.
+- **Wave**: a set of independent jobs that can be calibrated using the
+  same model runs.
 
-The specificity of `swfcalib` lies in the ability to try many proposal
-at once on an HPC, and to set up this proposal validation loop without a
-long running orchestrating job (pilot job).
+### Waves and Jobs
 
-The calibration is split into *waves*. Each wave can contains multiple
-*jobs*, each focusing on a set of parameters and related outcomes. This
-permits the parallel calibration of multiple independent parameters. At
-each *iteration*, the model is ran once per proposal, and each job
-gather the outcomes it needs to make its next proposal. Once all *jobs*
-in a *wave* are done, i.e. the parameters they govern are calibrated,
-the system moves to the next *wave*. This allows the sequential
-calibration of parameters when strong assumption about their
-independence can be made.
+The calibration is split into sequential **waves**. Each wave contains
+one or more **jobs** that run in parallel, each focusing on a subset of
+parameters and their related outcomes. At each iteration within a wave,
+the model is run once per proposal and each job evaluates only the
+outcomes it cares about.
 
-This design was crafted for the very noisy models where many
-replications are needed and where most parameters are independent or
-conditionally independent.
+Once all jobs in a wave converge, their calibrated parameter values are
+locked in and the system advances to the next wave. This allows later
+waves to calibrate parameters that depend on those fixed earlier – for
+example, calibrating transmission scalers only after diagnosis and
+treatment rates have been determined.
 
-## Versatility
+### User-Supplied Functions
 
-`swfcalib` makes no assumptions on how a set of parameters should be
-changed and how the quality of fit is assessed. It is up to the user to
-provide the mechanism to:
+`swfcalib` makes no assumptions about how proposals should be generated
+or how convergence should be assessed. Each job requires two
+user-supplied functions:
 
-- produce the next *proposals* to be tested
-- assess the quality of the fit
+- `make_next_proposals`: given current results, produce the next set of
+  parameter proposals.
+- `get_result`: given current results, determine if calibration is
+  complete for this job (return a one-row tibble of calibrated values)
+  or not yet (return `NULL`).
 
-`swfcalib` provides some pre-built functions for this. See the getting
-started vignette.
+`swfcalib` provides built-in function factories for common strategies:
+
+| Function                                                                                          | Strategy                                                                                                               |
+|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| `make_proposer_se_range()`                                                                        | Retain the best proposals (by squared error) and sample the next round from their ranges via Latin Hypercube Sampling. |
+| [`make_shrink_proposer()`](https://epimodel.github.io/swfcalib/reference/make_shrink_proposer.md) | Shrink the proposal range by a factor around the current best guess.                                                   |
+| `determ_end_thresh()`                                                                             | Finish when enough simulations produce outcomes within specified thresholds of the targets.                            |
+| `determ_poly_end()`                                                                               | Fit a polynomial regression to predict the optimal parameter value; finish when predictions stabilize.                 |
 
 ## Installation
 
@@ -92,6 +157,12 @@ remotes::install_github("EpiModel/swfcalib")
 ```
 
 ## Example
+
+See the [Getting Started
+vignette](https://epimodel.github.io/swfcalib/articles/swfcalib.html)
+for a complete worked example calibrating an HIV epidemic model,
+including wave and job configuration, simulator function setup, and the
+`slurmworkflow` integration.
 
 ``` r
 library(swfcalib)
