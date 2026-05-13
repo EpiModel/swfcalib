@@ -18,6 +18,7 @@ of 100k Men who have Sex with Men (MSM).
 A single run of our model locally looks like this:
 
 ``` r
+
 library(EpiModelHIV)
 
 epistats <- readRDS("data/input/epistats.rds")
@@ -72,17 +73,17 @@ output of interest.
 As our population is race stratified between, black, hispanic and white,
 we get three time the number of outputs.
 
-| Output Name   | Description                                          | Target Value |
-|---------------|------------------------------------------------------|--------------|
-| cc.dx.B       | Portion of HIV infected who are diagnosed (black)    | 0.847        |
-| cc.dx.H       | Portion of HIV infected who are diagnosed (hispanic) | 0.818        |
-| cc.dx.W       | Portion of HIV infected who are diagnosed (white)    | 0.862        |
-| cc.linked1m.B | Linkage to care within 1 month (black)               | 0.829        |
-| cc.linked1m.H | Linkage to care within 1 month (hispanic)            | 0.898        |
-| cc.linked1m.W | Linkage to care within 1 month (white)               | 0.881        |
-| i.prev.dx.B   | HIV diagnosed prevalence (black)                     | 0.33         |
-| i.prev.dx.H   | HIV diagnosed prevalence (hispanic)                  | 0.127        |
-| i.prev.dx.W   | HIV diagnosed prevalence (W)                         | 0.084        |
+| Output Name | Description | Target Value |
+|----|----|----|
+| cc.dx.B | Portion of HIV infected who are diagnosed (black) | 0.847 |
+| cc.dx.H | Portion of HIV infected who are diagnosed (hispanic) | 0.818 |
+| cc.dx.W | Portion of HIV infected who are diagnosed (white) | 0.862 |
+| cc.linked1m.B | Linkage to care within 1 month (black) | 0.829 |
+| cc.linked1m.H | Linkage to care within 1 month (hispanic) | 0.898 |
+| cc.linked1m.W | Linkage to care within 1 month (white) | 0.881 |
+| i.prev.dx.B | HIV diagnosed prevalence (black) | 0.33 |
+| i.prev.dx.H | HIV diagnosed prevalence (hispanic) | 0.127 |
+| i.prev.dx.W | HIV diagnosed prevalence (W) | 0.084 |
 
 ### Parameters
 
@@ -198,6 +199,7 @@ For the model function it is pretty straightforward. We need a function
 with this signature:
 
 ``` r
+
 model <- function(proposal) {
   # simulation code
   return(results)
@@ -215,6 +217,7 @@ columns `tibble`.
 Below is the code for our example.
 
 ``` r
+
 model <- function(proposal) {
   # Load all required elements
   library(EpiModelHIV)
@@ -313,6 +316,7 @@ edited by it.
   used for the next runs
 
 ``` r
+
 config = list(
   simulator = model,
   root_directory = "data/calib",
@@ -337,6 +341,7 @@ config = list(
 `waves` is a list of *waves*, with each wave being a list of jobs
 
 ``` r
+
 waves = list(
   wave1 = list(
     job1 = list(),
@@ -370,6 +375,7 @@ Below is an example of the *job* for calibrating the `hiv.trans.scale`
 parameters using the `i.prev.dx` outputs.
 
 ``` r
+
 job1 = list(
   targets = paste0("i.prev.dx.", c("B", "H", "W")),
   targets_val = c(0.33, 0.127, 0.09),
@@ -396,6 +402,7 @@ configuration to ensure that we have the correct number of proposals at
 each step.
 
 ``` r
+
 n_sims  <- 400
 
 calib_object <- list(
@@ -556,6 +563,7 @@ A mail is sent if a job fails or at the end of the 3rd calibration step.
 This latter indicate that the calibration process is done.
 
 ``` r
+
 library("slurmworkflow")
 
 # Define the `model` function

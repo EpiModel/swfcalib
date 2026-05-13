@@ -141,18 +141,19 @@ user-supplied functions:
 
 `swfcalib` provides built-in function factories for common strategies:
 
-| Function                                                                                          | Strategy                                                                                                               |
-|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| `make_proposer_se_range()`                                                                        | Retain the best proposals (by squared error) and sample the next round from their ranges via Latin Hypercube Sampling. |
-| [`make_shrink_proposer()`](https://epimodel.github.io/swfcalib/reference/make_shrink_proposer.md) | Shrink the proposal range by a factor around the current best guess.                                                   |
-| `determ_end_thresh()`                                                                             | Finish when enough simulations produce outcomes within specified thresholds of the targets.                            |
-| `determ_poly_end()`                                                                               | Fit a polynomial regression to predict the optimal parameter value; finish when predictions stabilize.                 |
+| Function | Strategy |
+|----|----|
+| `make_proposer_se_range()` | Retain the best proposals (by squared error) and sample the next round from their ranges via Latin Hypercube Sampling. |
+| [`make_shrink_proposer()`](https://epimodel.github.io/swfcalib/reference/make_shrink_proposer.md) | Shrink the proposal range by a factor around the current best guess. |
+| `determ_end_thresh()` | Finish when enough simulations produce outcomes within specified thresholds of the targets. |
+| `determ_poly_end()` | Fit a polynomial regression to predict the optimal parameter value; finish when predictions stabilize. |
 
 ## Installation
 
 You can install the development version of **swfcalib** like so:
 
 ``` r
+
 remotes::install_github("EpiModel/swfcalib")
 ```
 
@@ -165,6 +166,7 @@ including wave and job configuration, simulator function setup, and the
 `slurmworkflow` integration.
 
 ``` r
+
 library(swfcalib)
 ```
 
