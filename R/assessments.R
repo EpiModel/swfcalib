@@ -7,7 +7,7 @@ update_assessments <- function(calib_object, results) {
 
   cur_wave <- paste0("wave", get_current_wave(calib_object))
 
-  assessments <- future.apply::future_lapply(
+  assessments <- lapply(
     get_current_jobs(calib_object),
     make_job_assessment,
     calib_object = calib_object,

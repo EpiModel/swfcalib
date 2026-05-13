@@ -65,7 +65,7 @@ load_sim_results <- function(calib_object) {
       .wave = numeric(0)
     )
   } else {
-    dplyr::bind_rows(future.apply::future_lapply(sim_result_files, readRDS))
+    dplyr::bind_rows(lapply(sim_result_files, readRDS))
   }
 }
 
@@ -87,12 +87,11 @@ get_sim_result_save_path <- function(calib_object, i) {
 # `job$job_results` is a function that return NULL if the calibration job is not
 # finished and a 1-row `data.frame` of calibrated parameters otherwise.
 get_jobs_results <- function(calib_object, results) {
-  future.apply::future_lapply(
+  lapply(
     get_current_jobs(calib_object),
     function(co, job, res) job$get_result(co, job, res),
     res = results,
-    co = calib_object,
-    future.seed = TRUE
+    co = calib_object
   )
 }
 
@@ -118,5 +117,3 @@ get_full_results_path <- function(calib_object) {
   root_directory <- get_root_dir(calib_object)
   fs::path(root_directory, "full_results.rds")
 }
-
-

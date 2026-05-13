@@ -39,7 +39,7 @@ calibration_step1 <- function(calib_object, n_cores) {
 #'
 #' @export
 calibration_step2 <- function(calib_object, n_cores, batch_num, n_batches) {
-  oplan <- future::plan("multicore", workers = n_cores)
+  oplan <- future::plan("multisession", workers = n_cores)
   on.exit(future::plan(oplan), add = TRUE)
 
   calib_object <- load_calib_object(calib_object)

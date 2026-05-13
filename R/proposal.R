@@ -34,12 +34,11 @@ make_proposals <- function(calib_object, results) {
   if (get_current_iteration(calib_object) == 1) {
     proposals <- lapply(current_jobs, function(job) job$initial_proposals)
   } else {
-    proposals <- future.apply::future_lapply(
+    proposals <- lapply(
       current_jobs,
       function(co, job, res) job$make_next_proposals(co, job, res),
       res = results,
       co = calib_object,
-      future.seed = TRUE
     )
   }
   proposals <- merge_proposals(proposals)
@@ -55,7 +54,7 @@ make_proposals <- function(calib_object, results) {
 
 merge_proposals <- function(proposals) {
   max_rows <- max(vapply(proposals, nrow, numeric(1)))
-  proposals <- future.apply::future_lapply(
+  proposals <- lapply(
     proposals,
     function(d) {
       missing_rows <- max_rows - nrow(d)
@@ -66,8 +65,7 @@ merge_proposals <- function(proposals) {
         )
       }
       d
-    },
-    future.seed = TRUE
+    }
   )
   dplyr::bind_cols(proposals)
 }
