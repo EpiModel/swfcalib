@@ -38,7 +38,7 @@ make_proposals <- function(calib_object, results) {
       current_jobs,
       function(co, job, res) job$make_next_proposals(co, job, res),
       res = results,
-      co = calib_object,
+      co = calib_object
     )
   }
   proposals <- merge_proposals(proposals)
