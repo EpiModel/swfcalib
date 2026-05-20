@@ -4,12 +4,10 @@
 \alias{calibration_step1}
 \title{First calibration step}
 \usage{
-calibration_step1(calib_object, n_cores)
+calibration_step1(calib_object)
 }
 \arguments{
 \item{calib_object}{a formatted calibration object}
-
-\item{n_cores}{number of cores to run the processing on}
 }
 \description{
 First calibration step

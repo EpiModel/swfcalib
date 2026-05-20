@@ -9,8 +9,6 @@ calibration_step2(calib_object, n_cores, batch_num, n_batches)
 \arguments{
 \item{calib_object}{a formatted calibration object}
 
-\item{n_cores}{number of cores to run the processing on}
-
 \item{batch_num}{the batch number for the current proposal}
 
 \item{n_batches}{the total number of batches for this step}

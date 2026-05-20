@@ -1,13 +1,9 @@
 #' First calibration step
 #'
 #' @param calib_object a formatted calibration object
-#' @param n_cores number of cores to run the processing on
 #'
 #' @export
-calibration_step1 <- function(calib_object, n_cores) {
-  oplan <- future::plan("multicore", workers = n_cores)
-  on.exit(future::plan(oplan), add = TRUE)
-
+calibration_step1 <- function(calib_object) {
   calib_object <- load_calib_object(calib_object)
 
   calib_object <- process_sim_results(calib_object)
