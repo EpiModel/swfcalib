@@ -14,10 +14,6 @@ calibration_step2(calib_object, n_cores, batch_num, n_batches)
 
   a formatted calibration object
 
-- n_cores:
-
-  number of cores to run the processing on
-
 - batch_num:
 
   the batch number for the current proposal

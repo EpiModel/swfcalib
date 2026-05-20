@@ -5,7 +5,7 @@ First calibration step
 ## Usage
 
 ``` r
-calibration_step1(calib_object, n_cores)
+calibration_step1(calib_object)
 ```
 
 ## Arguments
@@ -13,7 +13,3 @@ calibration_step1(calib_object, n_cores)
 - calib_object:
 
   a formatted calibration object
-
-- n_cores:
-
-  number of cores to run the processing on
