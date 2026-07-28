@@ -31,20 +31,24 @@ calibration_step1 <- function(calib_object) {
 #' @param n_cores number of cores to run the processing on
 #' @param batch_num the batch number for the current proposal
 #' @param n_batches the total number of batches for this step
-#' @param future_use_plan If `NULL`, `multisession` is used with
-#'        `workers = ncores for its parallelization. Otherwise, it can
-#'        take the output of a `future::tweak()` call to setup a user defined
-#'        temporary plan
+#' @param future_use_plan If `NULL`, `multicore` is used with
+#'   `workers = ncores` for its parallelization. Otherwise, it can take the
+#'   output of a `future::tweak()` call to setup a user defined plan
 #'
 #' @inheritParams calibration_step1
 #'
 #' @export
 calibration_step2 <- function(calib_object, n_cores, batch_num, n_batches,
                               future_use_plan = NULL) {
-  if (inherits(future_use_plan, c("tweaked", "future"))) {
+  if (is.null(future_use_plan)) {
+    with(future::plan("multicore", workers = n_cores), local = TRUE)
+  } else if (inherits(future_use_plan, c("tweaked", "future"))) {
     with(future::plan(future_use_plan), local = TRUE)
   } else {
-    with(future::plan("multisession", workers = n_cores), local = TRUE)
+    stop(
+      "`future_use_plan` must be either `NULL` or the result of a",
+      " `future::tweak` call"
+    )
   }
 
   calib_object <- load_calib_object(calib_object)

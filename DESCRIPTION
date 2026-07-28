@@ -13,7 +13,7 @@ License: MIT + file LICENSE
 Depends:
   R (>= 4.1.0)
 Imports:
-   future,
+   future (>= 1.40.0),
    future.apply,
    slurmworkflow,
    fs,
