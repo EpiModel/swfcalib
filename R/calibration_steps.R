@@ -31,7 +31,7 @@ calibration_step1 <- function(calib_object) {
 #' @param n_cores number of cores to run the processing on
 #' @param batch_num the batch number for the current proposal
 #' @param n_batches the total number of batches for this step
-#' @param future.use.plan If `NULL`, `multisession` is used with
+#' @param future_use_plan If `NULL`, `multisession` is used with
 #'        `workers = ncores for its parallelization. Otherwise, it can
 #'        take the output of a `future::tweak()` call to setup a user defined
 #'        temporary plan
@@ -40,7 +40,7 @@ calibration_step1 <- function(calib_object) {
 #'
 #' @export
 calibration_step2 <- function(calib_object, n_cores, batch_num, n_batches,
-                              future.use.plan = NULL) {
+                              future_use_plan = NULL) {
   if (inherits(future.use.plan, c("tweaked", "future"))) {
     with(future::plan(future.use.plan), local = TRUE)
   } else {

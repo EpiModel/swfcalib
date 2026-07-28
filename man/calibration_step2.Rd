@@ -9,7 +9,7 @@ calibration_step2(
   n_cores,
   batch_num,
   n_batches,
-  future.use.plan = NULL
+  future_use_plan = NULL
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ calibration_step2(
 
 \item{n_batches}{the total number of batches for this step}
 
-\item{future.use.plan}{If \code{NULL}, \code{multisession} is used with
+\item{future_use_plan}{If \code{NULL}, \code{multisession} is used with
 \verb{workers = ncores for its parallelization. Otherwise, it can take the output of a }future::tweak()` call to setup a user defined
 temporary plan}
 }
