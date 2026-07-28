@@ -41,10 +41,10 @@ calibration_step1 <- function(calib_object) {
 #' @export
 calibration_step2 <- function(calib_object, n_cores, batch_num, n_batches,
                               future_use_plan = NULL) {
-  if (inherits(future.use.plan, c("tweaked", "future"))) {
-    with(future::plan(future.use.plan), local = TRUE)
+  if (inherits(future_use_plan, c("tweaked", "future"))) {
+    with(future::plan(future_use_plan), local = TRUE)
   } else {
-    with(future::plan("multisession", workers = ncores), local = TRUE)
+    with(future::plan("multisession", workers = n_cores), local = TRUE)
   }
 
   calib_object <- load_calib_object(calib_object)
