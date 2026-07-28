@@ -4,14 +4,26 @@
 \alias{calibration_step2}
 \title{Second calibration step: run the model for each proposal}
 \usage{
-calibration_step2(calib_object, n_cores, batch_num, n_batches)
+calibration_step2(
+  calib_object,
+  n_cores,
+  batch_num,
+  n_batches,
+  future.use.plan = NULL
+)
 }
 \arguments{
 \item{calib_object}{a formatted calibration object}
 
+\item{n_cores}{number of cores to run the processing on}
+
 \item{batch_num}{the batch number for the current proposal}
 
 \item{n_batches}{the total number of batches for this step}
+
+\item{future.use.plan}{If \code{NULL}, \code{multisession} is used with
+\verb{workers = ncores for its parallelization. Otherwise, it can take the output of a }future::tweak()` call to setup a user defined
+temporary plan}
 }
 \description{
 Second calibration step: run the model for each proposal
