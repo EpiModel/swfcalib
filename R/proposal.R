@@ -3,6 +3,18 @@ get_proposals_path <- function(calib_object) {
   fs::path(current_wave_dir, "proposals.rds")
 }
 
+#' Get the default proposal of a calibration
+#'
+#' The default proposal holds the current best value for every parameter under
+#' calibration. It starts as `config$default_proposal` and is updated as waves
+#' complete, so on a finished calibration it is the calibrated parameter set.
+#'
+#' @inheritParams calibration_step1
+#'
+#' @return a one-row `data.frame` of parameter values, one column per calibrated
+#'   parameter
+#'
+#' @export
 get_default_proposal <- function(calib_object) {
   calib_object$state$default_proposal
 }
