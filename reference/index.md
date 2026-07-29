@@ -9,6 +9,10 @@
 - [`calibration_step3()`](https://epimodel.github.io/swfcalib/reference/calibration_step3.md)
   : Third calibration step: Wrap up the calibration system and store the
   results
+- [`get_default_proposal()`](https://epimodel.github.io/swfcalib/reference/get_default_proposal.md)
+  : Get the default proposal of a calibration
+- [`load_calib_object()`](https://epimodel.github.io/swfcalib/reference/load_calib_object.md)
+  : Load a calibration object from disk
 - [`load_sideload()`](https://epimodel.github.io/swfcalib/reference/load_sideload.md)
   : Read some data saved to be reused by the calibration process
 - [`make_shrink_proposer()`](https://epimodel.github.io/swfcalib/reference/make_shrink_proposer.md)
