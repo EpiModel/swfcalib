@@ -38,7 +38,13 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">calibration_step2</span><span class="op">(</span><span class="va">calib_object</span>, <span class="va">n_cores</span>, <span class="va">batch_num</span>, <span class="va">n_batches</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">calibration_step2</span><span class="op">(</span></span>
+<span>  <span class="va">calib_object</span>,</span>
+<span>  <span class="va">n_cores</span>,</span>
+<span>  <span class="va">batch_num</span>,</span>
+<span>  <span class="va">n_batches</span>,</span>
+<span>  future_use_plan <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -49,12 +55,22 @@
 <dd><p>a formatted calibration object</p></dd>
 
 
+<dt id="arg-n-cores">n_cores<a class="anchor" aria-label="anchor" href="#arg-n-cores"></a></dt>
+<dd><p>number of cores to run the processing on</p></dd>
+
+
 <dt id="arg-batch-num">batch_num<a class="anchor" aria-label="anchor" href="#arg-batch-num"></a></dt>
 <dd><p>the batch number for the current proposal</p></dd>
 
 
 <dt id="arg-n-batches">n_batches<a class="anchor" aria-label="anchor" href="#arg-n-batches"></a></dt>
 <dd><p>the total number of batches for this step</p></dd>
+
+
+<dt id="arg-future-use-plan">future_use_plan<a class="anchor" aria-label="anchor" href="#arg-future-use-plan"></a></dt>
+<dd><p>If <code>NULL</code>, <code>multisession</code> is used with
+<code>workers = ncores for its parallelization. Otherwise, it can take the output of a </code>future::tweak()` call to setup a user defined
+temporary plan</p></dd>
 
 </dl></div>
 
@@ -67,7 +83,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>
