@@ -46,8 +46,8 @@ calibration_step2 <- function(calib_object, n_cores, batch_num, n_batches,
     with(future::plan(future_use_plan), local = TRUE)
   } else {
     stop(
-      "`future_use_plan` must be either `NULL` or the result of a",
-      " `future::tweak` call"
+      "In `calibration_step2`, the `future_use_plan` argument must be either ",
+      "`NULL` or the result of a `future::tweak` call"
     )
   }
 
