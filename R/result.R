@@ -97,9 +97,8 @@ get_jobs_results <- function(calib_object, results) {
 
 # Full results: concatenation of all waves results
 make_full_results <- function(calib_object) {
-  current_wave <- get_current_wave(calib_object) - 1
   wave_results <- lapply(
-    seq_len(current_wave),
+    seq_along(calib_object$waves),
     function(wave) {
       calib_object <- mutate_calib_state(calib_object, "wave", wave)
       load_results(calib_object)
