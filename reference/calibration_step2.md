@@ -34,6 +34,7 @@ calibration_step2(
 
 - future_use_plan:
 
-  If `NULL`, `multisession` is used with
-  `workers = ncores for its parallelization. Otherwise, it can take the output of a `future::tweak()\`
-  call to setup a user defined temporary plan
+  If `NULL`, `multicore` is used with `workers = ncores` for its
+  parallelization. Otherwise, it can take the output of a
+  [`future::tweak()`](https://future.futureverse.org/reference/plan.html)
+  call to setup a user defined plan
