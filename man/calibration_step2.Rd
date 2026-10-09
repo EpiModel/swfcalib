@@ -21,9 +21,9 @@ calibration_step2(
 
 \item{n_batches}{the total number of batches for this step}
 
-\item{future_use_plan}{If \code{NULL}, \code{multisession} is used with
-\verb{workers = ncores for its parallelization. Otherwise, it can take the output of a }future::tweak()` call to setup a user defined
-temporary plan}
+\item{future_use_plan}{If \code{NULL}, \code{multicore} is used with
+\code{workers = ncores} for its parallelization. Otherwise, it can take the
+output of a \code{future::tweak()} call to setup a user defined plan}
 }
 \description{
 Second calibration step: run the model for each proposal
