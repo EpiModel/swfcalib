@@ -555,12 +555,19 @@ defined so far.
 
 The main thing you may want to change in this script is the `batch_size`
 variable that governs how many sims are run in parallel on a single
-cluster. On the RSPH HPC we set it to 8. Therefore, 50 batches of 8 are
-submitted to `slurm` at once to make the 400 simulations requested per
-iteration.
+cluster node. On the RSPH HPC we set it to 8. Therefore, 50 batches of 8
+are submitted to `slurm` at once to make the 400 simulations requested
+per iteration.
 
 A mail is sent if a job fails or at the end of the 3rd calibration step.
 This latter indicate that the calibration process is done.
+
+For a complete, working version of this workflow in an applied project,
+see `R/C-calibration/workflow-swfcalib.R` in the
+[EpiModelHIV-Template](https://github.com/EpiModel/EpiModelHIV-Template).
+There, `make_em_workflow()` also adds a first step that updates the
+project and restores its packages on the HPC, and later steps run the
+calibrated model and process the results.
 
 ``` r
 
@@ -703,7 +710,7 @@ calib_object <- list(
 # Use preconfigured HPC settings
 hpc_configs <- EpiModelHPC::swf_configs_rsph(
   partition = "epimodel",
-  r_version = "4.3",
+  r_version = "4.6.1", # the R version recorded in your lockfile
   mail_user = "<your_user>@emory.edu"
 )
 
@@ -718,7 +725,6 @@ wf <- add_workflow_step(
   step_tmpl = step_tmpl_do_call(
     what = swfcalib::calibration_step1,
     args = list(
-      n_cores = 8,
       calib_object = calib_object
     ),
     setup_lines = hpc_configs$r_loader
@@ -733,7 +739,7 @@ wf <- add_workflow_step(
 
 # Calibration step 2
 batch_size <- 8
-batch_numbers <- swfcalib:::get_batch_numbers(calib_object, batch_size)
+batch_numbers <- seq_len(ceiling(n_sims / batch_size))
 wf <- add_workflow_step(
   wf_summary = wf,
   step_tmpl = step_tmpl_map(

@@ -687,11 +687,16 @@ the calibration is finished.</p>
 was defined so far.</p>
 <p>The main thing you may want to change in this script is the
 <code>batch_size</code> variable that governs how many sims are run in
-parallel on a single cluster. On the RSPH HPC we set it to 8. Therefore,
-50 batches of 8 are submitted to <code>slurm</code> at once to make the
-400 simulations requested per iteration.</p>
+parallel on a single cluster node. On the RSPH HPC we set it to 8.
+Therefore, 50 batches of 8 are submitted to <code>slurm</code> at once
+to make the 400 simulations requested per iteration.</p>
 <p>A mail is sent if a job fails or at the end of the 3rd calibration
 step. This latter indicate that the calibration process is done.</p>
+<p>For a complete, working version of this workflow in an applied
+project, see <code>R/C-calibration/workflow-swfcalib.R</code> in the <a href="https://github.com/EpiModel/EpiModelHIV-Template" class="external-link">EpiModelHIV-Template</a>.
+There, <code>make_em_workflow()</code> also adds a first step that
+updates the project and restores its packages on the HPC, and later
+steps run the calibrated model and process the results.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://epimodel.github.io/slurmworkflow/" class="external-link">"slurmworkflow"</a></span><span class="op">)</span></span>
 <span></span>
@@ -832,7 +837,7 @@ step. This latter indicate that the calibration process is done.</p>
 <span><span class="co"># Use preconfigured HPC settings</span></span>
 <span><span class="va">hpc_configs</span> <span class="op">&lt;-</span> <span class="fu">EpiModelHPC</span><span class="fu">::</span><span class="fu">swf_configs_rsph</span><span class="op">(</span></span>
 <span>  partition <span class="op">=</span> <span class="st">"epimodel"</span>,</span>
-<span>  r_version <span class="op">=</span> <span class="st">"4.3"</span>,</span>
+<span>  r_version <span class="op">=</span> <span class="st">"4.6.1"</span>, <span class="co"># the R version recorded in your lockfile</span></span>
 <span>  mail_user <span class="op">=</span> <span class="st">"&lt;your_user&gt;@emory.edu"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -847,7 +852,6 @@ step. This latter indicate that the calibration process is done.</p>
 <span>  step_tmpl <span class="op">=</span> <span class="fu"><a href="https://epimodel.github.io/slurmworkflow/reference/step_tmpl_do_call.html" class="external-link">step_tmpl_do_call</a></span><span class="op">(</span></span>
 <span>    what <span class="op">=</span> <span class="fu">swfcalib</span><span class="fu">::</span><span class="va"><a href="../reference/calibration_step1.html">calibration_step1</a></span>,</span>
 <span>    args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>      n_cores <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>      calib_object <span class="op">=</span> <span class="va">calib_object</span></span>
 <span>    <span class="op">)</span>,</span>
 <span>    setup_lines <span class="op">=</span> <span class="va">hpc_configs</span><span class="op">$</span><span class="va">r_loader</span></span>
@@ -862,7 +866,7 @@ step. This latter indicate that the calibration process is done.</p>
 <span></span>
 <span><span class="co"># Calibration step 2</span></span>
 <span><span class="va">batch_size</span> <span class="op">&lt;-</span> <span class="fl">8</span></span>
-<span><span class="va">batch_numbers</span> <span class="op">&lt;-</span> <span class="fu">swfcalib</span><span class="fu">:::</span><span class="fu">get_batch_numbers</span><span class="op">(</span><span class="va">calib_object</span>, <span class="va">batch_size</span><span class="op">)</span></span>
+<span><span class="va">batch_numbers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="va">n_sims</span> <span class="op">/</span> <span class="va">batch_size</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">wf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://epimodel.github.io/slurmworkflow/reference/add_workflow_step.html" class="external-link">add_workflow_step</a></span><span class="op">(</span></span>
 <span>  wf_summary <span class="op">=</span> <span class="va">wf</span>,</span>
 <span>  step_tmpl <span class="op">=</span> <span class="fu"><a href="https://epimodel.github.io/slurmworkflow/reference/step_tmpl_map.html" class="external-link">step_tmpl_map</a></span><span class="op">(</span></span>
