@@ -1,31 +1,17 @@
-get_current_wave <- function(calib_object) {
-  calib_object$state$wave
-}
-
 get_current_wave_dir <- function(calib_object) {
-  root_directory <- get_root_dir(calib_object)
-  current_wave <- get_current_wave(calib_object)
-  fs::path(root_directory, "waves", current_wave)
-}
-
-is_valid_wave <- function(calib_object) {
-  get_current_wave(calib_object) <= length(calib_object$waves)
-}
-
-is_last_wave <- function(calib_object) {
-  get_current_wave(calib_object) == length(calib_object$waves)
-}
-
-is_wave_done <- function(calib_object) {
-  calib_object$state$done
+  fs::path(
+    calib_object$config$root_directory,
+    "waves",
+    calib_object$state$wave
+  )
 }
 
 update_wave_iteration <- function(calib_object) {
-  if (is_wave_done(calib_object)) {
+  if (calib_object$state$done) {
     calib_object <- increment_wave(calib_object)
   } else {
-    calib_object <- increment_iteration(calib_object)
-    if (!is_valid_iteration(calib_object)) {
+    calib_object$state$iteration <- calib_object$state$iteration + 1
+    if (calib_object$state$iteration > calib_object$config$max_iteration) {
       save_calib_object(calib_object)
       stop("Max iteration exceded, stopping.")
     }
@@ -36,17 +22,16 @@ update_wave_iteration <- function(calib_object) {
 increment_wave <- function(calib_object) {
   clear_sideloads(calib_object)
 
-  if (is_last_wave(calib_object))
+  if (calib_object$state$wave == length(calib_object$waves)) {
     return(calib_object)
+  }
 
-  current_wave <- get_current_wave(calib_object)
-  calib_object <- mutate_done_status(calib_object, FALSE)
-  calib_object <- mutate_calib_state(calib_object, "iteration", 1)
-  calib_object <- mutate_calib_state(calib_object, "wave", current_wave + 1)
-  calib_object <- mutate_jobs_done_status(
-    calib_object,
-    rep(FALSE, length(get_current_jobs(calib_object)))
-  )
+  calib_object$state$done <- FALSE
+  calib_object$state$iteration <- 1
+  calib_object$state$wave <- calib_object$state$wave + 1
+  calib_object$state$jobs_done <-
+    rep(FALSE, length(calib_object$waves[[calib_object$state$wave]]))
+
   make_directories(calib_object)
   calib_object
 }

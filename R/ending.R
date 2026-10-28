@@ -1,6 +1,5 @@
 get_calibrated_csv_path <- function(calib_object) {
-  root_directory <- get_root_dir(calib_object)
-  fs::path(root_directory, "calibrated.csv")
+  fs::path(calib_object$config$root_directory, "calibrated.csv")
 }
 
 get_param_type <- function(x) {
@@ -17,7 +16,7 @@ save_calibrated_csv <- function(calib_object) {
 }
 
 wrap_up_calibration <- function(calib_object) {
-  calib_object <- store_calibrated_proposal(calib_object)
+  calib_object$calibrated_proposal <- calib_object$state$default_proposal
   save_calibrated_csv(calib_object)
 
   full_results <- make_full_results(calib_object)

@@ -1,6 +1,5 @@
 get_proposals_path <- function(calib_object) {
-  current_wave_dir <- get_current_wave_dir(calib_object)
-  fs::path(current_wave_dir, "proposals.rds")
+  fs::path(get_current_wave_dir(calib_object), "proposals.rds")
 }
 
 #' Get the default proposal of a calibration
@@ -26,7 +25,7 @@ get_proposal_n <- function(proposals, n) {
 load_proposals <- function(calib_object) {
   proposals_path <- get_proposals_path(calib_object)
   if (fs::file_exists(proposals_path)) {
-    readRDS(get_proposals_path(calib_object))
+    readRDS(proposals_path)
   } else {
     dplyr::tibble()
   }
@@ -37,13 +36,11 @@ save_proposals <- function(calib_object, proposals) {
   invisible(TRUE)
 }
 
-mutate_default_proposal <- function(calib_object, default_proposal) {
-  mutate_calib_state(calib_object, "default_proposal", default_proposal)
-}
-
 make_proposals <- function(calib_object, results) {
-  current_jobs <- get_current_jobs(calib_object, not_done_only = TRUE)
-  if (get_current_iteration(calib_object) == 1) {
+  current_jobs <- calib_object$waves[[calib_object$state$wave]]
+  current_jobs <- current_jobs[!calib_object$state$jobs_done]
+
+  if (calib_object$state$iteration == 1) {
     proposals <- lapply(current_jobs, function(job) job$initial_proposals)
   } else {
     proposals <- lapply(
@@ -56,8 +53,8 @@ make_proposals <- function(calib_object, results) {
   proposals <- merge_proposals(proposals)
   proposals <- fill_proposals(proposals, calib_object)
   proposals[[".proposal_index"]] <- seq_len(nrow(proposals))
-  proposals[[".wave"]] <- get_current_wave(calib_object)
-  proposals[[".iteration"]] <- get_current_iteration(calib_object)
+  proposals[[".wave"]] <- calib_object$state$wave
+  proposals[[".iteration"]] <- calib_object$state$iteration
   dplyr::select(
     proposals,
     dplyr::everything(), ".proposal_index", ".wave", ".iteration"
@@ -83,7 +80,7 @@ merge_proposals <- function(proposals) {
 }
 
 fill_proposals <- function(proposals, calib_object) {
-  default_proposal <- get_default_proposal(calib_object)
+  default_proposal <- calib_object$state$default_proposal
   missing_cols <- setdiff(names(default_proposal), names(proposals))
   proposals <- merge_proposals(list(
     proposals,
@@ -95,7 +92,7 @@ fill_proposals <- function(proposals, calib_object) {
 }
 
 adjust_proposal_number <- function(proposals, calib_object) {
-  n_sims <- get_n_sims(calib_object)
+  n_sims <- calib_object$config$n_sims
   if (nrow(proposals) > n_sims) {
     proposals <- dplyr::slice_sample(proposals, n = n_sims, replace = TRUE)
   } else if (nrow(proposals) < n_sims) {
@@ -108,17 +105,8 @@ adjust_proposal_number <- function(proposals, calib_object) {
   proposals
 }
 
-get_calibrated_proposal <- function(calib_object) {
-  calib_object$calibrated_proposal
-}
-
-store_calibrated_proposal <- function(calib_object) {
-  calib_object$calibrated_proposal <- get_default_proposal(calib_object)
-  calib_object
-}
-
 get_long_calibrated_proposal <- function(calib_object) {
-  calibrated_proposal <- get_calibrated_proposal(calib_object)
+  calibrated_proposal <- calib_object$calibrated_proposal
   long_calib <- tidyr::pivot_longer(
     calibrated_proposal, cols = dplyr::everything(),
     names_to = "param", values_to = "value"
@@ -128,7 +116,7 @@ get_long_calibrated_proposal <- function(calib_object) {
 }
 
 update_default_proposal <- function(calib_object, job_results) {
-  default_proposal <- get_default_proposal(calib_object)
+  default_proposal <- calib_object$state$default_proposal
   for (i in seq_along(job_results)) {
     result <- job_results[[i]]
     if (!is.null(result)) {
@@ -136,5 +124,6 @@ update_default_proposal <- function(calib_object, job_results) {
       default_proposal[, shared_params] <- result[, shared_params]
     }
   }
-  mutate_default_proposal(calib_object, default_proposal)
+  calib_object$state$default_proposal <- default_proposal
+  calib_object
 }

@@ -1,7 +1,3 @@
-get_root_dir <- function(calib_object) {
-  calib_object$config$root_directory
-}
-
 make_directories <- function(calib_object) {
   dirs <- c(
     get_sim_result_save_dir(calib_object),
@@ -29,7 +25,7 @@ make_directories <- function(calib_object) {
 #' @export
 # calib_save_path must be a variable in all SWF steps
 load_calib_object <- function(calib_object) {
-  save_path <- get_calib_object_path(calib_object)
+  save_path <- fs::path(calib_object$config$root_directory, "calib_object.rds")
   if (fs::file_exists(save_path)) {
     calib_object <- readRDS(save_path)
   } else {
@@ -40,14 +36,9 @@ load_calib_object <- function(calib_object) {
   calib_object
 }
 
-
-get_calib_object_path <- function(calib_object) {
-  root_directory <- get_root_dir(calib_object)
-  fs::path(root_directory, "calib_object.rds")
-}
-
 save_calib_object <- function(calib_object) {
-  saveRDS(calib_object, get_calib_object_path(calib_object))
+  save_path <- fs::path(calib_object$config$root_directory, "calib_object.rds")
+  saveRDS(calib_object, save_path)
 }
 
 initialize_state <- function(calib_object) {
@@ -58,9 +49,7 @@ initialize_state <- function(calib_object) {
     default_proposal = calib_object$config$default_proposal
   )
   calib_object <- initialize_job_ids(calib_object)
-  calib_object <- mutate_jobs_done_status(
-    calib_object,
-    rep(FALSE, length(get_current_jobs(calib_object)))
-  )
+  calib_object$state$jobs_done <-
+    rep(FALSE, length(calib_object$waves[[calib_object$state$wave]]))
   calib_object
 }

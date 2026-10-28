@@ -4,10 +4,10 @@ run_simulation <- function(calib_object, proposal) {
 
 print_log <- function(calib_object) {
   cat("Current state:\n")
-  cat("\tWave: ", get_current_wave(calib_object), "\n")
-  cat("\tIteration: ", get_current_iteration(calib_object), "\n\n")
+  cat("\tWave: ", calib_object$state$wave, "\n")
+  cat("\tIteration: ", calib_object$state$iteration, "\n\n")
   cat("The `default_proposal` currently contains:\n")
-  default_proposal <- get_default_proposal(calib_object)
+  default_proposal <- calib_object$state$default_proposal
   for (nm in names(default_proposal)) {
     cat("\t", nm, ": ", default_proposal[[nm]][1], "\n")
   }

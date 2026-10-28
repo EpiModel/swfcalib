@@ -3,14 +3,14 @@
 # Discard the iteration if some results are missing
 process_sim_results <- function(calib_object) {
   # Early return if no simulations has been run for this wave yet
-  if (get_current_iteration(calib_object) == 0) return(calib_object)
+  if (calib_object$state$iteration == 0) return(calib_object)
 
   new_results <- merge_sim_results(calib_object)
   clear_sim_results(calib_object)
   # If less results than expected, discard this iteration
   # (for instance if the cluster stopped during the step 2)
-  if (nrow(new_results) < get_n_sims(calib_object)) {
-    calib_object <- decrement_iteration(calib_object)
+  if (nrow(new_results) < calib_object$config$n_sims) {
+    calib_object$state$iteration <- calib_object$state$iteration - 1
   } else {
     save_results(calib_object, new_results)
   }
@@ -37,7 +37,7 @@ save_results <- function(calib_object, new_results) {
 load_results <- function(calib_object) {
   results_path <- get_results_path(calib_object)
   if (fs::file_exists(results_path)) {
-    readRDS(get_results_path(calib_object))
+    readRDS(results_path)
   } else {
     dplyr::tibble()
   }
@@ -49,8 +49,8 @@ get_results_path <- function(calib_object) {
 
 save_sim_result <- function(calib_object, sim_results, i, proposal) {
   save_path <- get_sim_result_save_path(calib_object, i)
-  sim_results[[".wave"]] <- get_current_wave(calib_object)
-  sim_results[[".iteration"]] <- get_current_iteration(calib_object)
+  sim_results[[".wave"]] <- calib_object$state$wave
+  sim_results[[".iteration"]] <- calib_object$state$iteration
   sim_results[[".proposal_index"]] <- proposal[[".proposal_index"]]
   saveRDS(sim_results, save_path)
 }
@@ -88,7 +88,7 @@ get_sim_result_save_path <- function(calib_object, i) {
 # finished and a 1-row `data.frame` of calibrated parameters otherwise.
 get_jobs_results <- function(calib_object, results) {
   lapply(
-    get_current_jobs(calib_object),
+    calib_object$waves[[calib_object$state$wave]],
     function(co, job, res) job$get_result(co, job, res),
     res = results,
     co = calib_object
@@ -100,8 +100,9 @@ make_full_results <- function(calib_object) {
   wave_results <- lapply(
     seq_along(calib_object$waves),
     function(wave) {
-      calib_object <- mutate_calib_state(calib_object, "wave", wave)
-      load_results(calib_object)
+      wave_object <- calib_object
+      wave_object$state$wave <- wave
+      load_results(wave_object)
     }
   )
   dplyr::bind_rows(wave_results)
@@ -113,6 +114,5 @@ save_full_results <- function(calib_object, full_results) {
 }
 
 get_full_results_path <- function(calib_object) {
-  root_directory <- get_root_dir(calib_object)
-  fs::path(root_directory, "full_results.rds")
+  fs::path(calib_object$config$root_directory, "full_results.rds")
 }

@@ -22,12 +22,11 @@ load_sideload <- function(calib_object, job) {
 
 get_sideload_path <- function(calib_object, job) {
   sideload_directory <- get_sideload_dir(calib_object)
-  fs::path(sideload_directory, paste0(get_job_id(job), ".rds"))
+  fs::path(sideload_directory, paste0(job$id, ".rds"))
 }
 
 get_sideload_dir <- function(calib_object) {
-  root_directory <- get_root_dir(calib_object)
-  fs::path(root_directory, "sideloads")
+  fs::path(calib_object$config$root_directory, "sideloads")
 }
 
 clear_sideloads <- function(calib_object) {

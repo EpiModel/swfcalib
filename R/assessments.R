@@ -5,10 +5,10 @@ update_assessments <- function(calib_object, results) {
     return(invisible(calib_object))
   }
 
-  cur_wave <- paste0("wave", get_current_wave(calib_object))
+  cur_wave <- paste0("wave", calib_object$state$wave)
 
   assessments <- lapply(
-    get_current_jobs(calib_object),
+    calib_object$waves[[calib_object$state$wave]],
     make_job_assessment,
     calib_object = calib_object,
     results = results
@@ -39,7 +39,7 @@ save_assessments <- function(calib_object, assessments) {
 }
 
 get_assessments_path <- function(calib_object) {
-  fs::path(get_root_dir(calib_object), "assessments.rds")
+  fs::path(calib_object$config$root_directory, "assessments.rds")
 }
 
 load_assessments <- function(calib_object) {
@@ -51,11 +51,11 @@ make_job_assessment <- function(calib_object, job, results) {
   out <- list()
 
   out$infos <- job[c("targets", "targets_val", "params")]
-  out$infos$job_id <- get_job_id(job)
+  out$infos$job_id <- job$id
   out$infos$params_ranges <- lapply(job$initial_proposals, range)
 
-  current_iteration <- get_current_iteration(calib_object)
-  current_wave <- get_current_wave(calib_object)
+  current_iteration <- calib_object$state$iteration
+  current_wave <- calib_object$state$wave
   d <- dplyr::filter(
     results,
     .data$.iteration == current_iteration,
